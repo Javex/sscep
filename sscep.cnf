@@ -121,7 +121,7 @@ storelocation = LOCAL_MACHINE
 # CA identifier string
 # CAIdentifier = 
 
-# Fingerprint algorithm
+# Fingerprint algorithm (md5|sha1)
 # FingerPrint = 
 
 [sscep_enroll]
