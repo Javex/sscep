@@ -41,6 +41,13 @@ Verbose = true
 # Any value other than true will be treated as false
 Debug = true
 
+# Additional GET params to send with request. This might be to inform the PKI
+# of additional params. This is beyond the scope of the protocol and is added
+# as a convenience where it is necessary. It might be used to inform the PKI
+# of the certificate usage or just as a "life beacon".
+# Pass in parameters like in a GET string: key1=value1&key2=value2...
+#MonitorInformation=
+
 
 [sscep_engine]
 ################################################################
