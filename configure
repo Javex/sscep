@@ -556,6 +556,7 @@ as_tr_cpp="eval sed 'y%*$as_cr_letters%P$as_cr_LETTERS%;s%[^_$as_cr_alnum]%_%g'"
 # Sed expression to map a string onto a valid variable name.
 as_tr_sh="eval sed 'y%*+%pp%;s%[^_$as_cr_alnum]%_%g'"
 
+ac_unique_file="src/sscep.c"
 
 test -n "$DJDIR" || exec 7<&0 </dev/null
 exec 6>&1
@@ -585,7 +586,6 @@ PACKAGE_STRING='libscep 20121025'
 PACKAGE_BUGREPORT='https://github.com/certnanny/sscep/issues'
 PACKAGE_URL=''
 
-ac_unique_file="src/sscep.c"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -622,7 +622,14 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='am__EXEEXT_FALSE
+ac_subst_vars='COVERAGE_LDFLAGS
+COVERAGE_CFLAGS
+GENHTML
+LCOV
+SHTOOL
+HAVE_GCOV_FALSE
+HAVE_GCOV_TRUE
+am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
@@ -634,6 +641,7 @@ CHECK_CFLAGS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
+SED
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
 CCDEPMODE
@@ -721,6 +729,7 @@ ac_user_opts='
 enable_option_checking
 enable_silent_rules
 enable_dependency_tracking
+enable_gcov
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1356,6 +1365,7 @@ Optional Features:
                           do not reject slow dependency extractors
   --disable-dependency-tracking
                           speeds up one-time build
+  --enable-gcov           enable coverage testing with gcov
 
 Some influential environment variables:
   CC          C compiler command
@@ -2212,35 +2222,6 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-ac_aux_dir=
-for ac_dir in build-aux "$srcdir"/build-aux; do
-  if test -f "$ac_dir/install-sh"; then
-    ac_aux_dir=$ac_dir
-    ac_install_sh="$ac_aux_dir/install-sh -c"
-    break
-  elif test -f "$ac_dir/install.sh"; then
-    ac_aux_dir=$ac_dir
-    ac_install_sh="$ac_aux_dir/install.sh -c"
-    break
-  elif test -f "$ac_dir/shtool"; then
-    ac_aux_dir=$ac_dir
-    ac_install_sh="$ac_aux_dir/shtool install -c"
-    break
-  fi
-done
-if test -z "$ac_aux_dir"; then
-  as_fn_error $? "cannot find install-sh, install.sh, or shtool in build-aux \"$srcdir\"/build-aux" "$LINENO" 5
-fi
-
-# These three variables are undocumented and unsupported,
-# and are intended to be withdrawn in a future Autoconf release.
-# They can cause serious problems if a builder's source tree is in a directory
-# whose full name contains unusual characters.
-ac_config_guess="$SHELL $ac_aux_dir/config.guess"  # Please don't use this var.
-ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
-ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
-
-
 am__api_version='1.13'
 
 # Find a good install program.  We prefer a C program (faster),
@@ -2768,8 +2749,6 @@ mkdir_p='$(MKDIR_P)'
 AMTAR='$${TAR-tar}'
 
 am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
-
-
 
 
 
@@ -3882,6 +3861,75 @@ if test "$am_t" != yes; then
    CC="$am_aux_dir/compile $CC"
 fi
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for a sed that does not truncate output" >&5
+$as_echo_n "checking for a sed that does not truncate output... " >&6; }
+if ${ac_cv_path_SED+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+            ac_script=s/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/
+     for ac_i in 1 2 3 4 5 6 7; do
+       ac_script="$ac_script$as_nl$ac_script"
+     done
+     echo "$ac_script" 2>/dev/null | sed 99q >conftest.sed
+     { ac_script=; unset ac_script;}
+     if test -z "$SED"; then
+  ac_path_SED_found=false
+  # Loop through the user's path and test for each of PROGNAME-LIST
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_prog in sed gsed; do
+    for ac_exec_ext in '' $ac_executable_extensions; do
+      ac_path_SED="$as_dir/$ac_prog$ac_exec_ext"
+      as_fn_executable_p "$ac_path_SED" || continue
+# Check for GNU ac_path_SED and select it if it is found.
+  # Check for GNU $ac_path_SED
+case `"$ac_path_SED" --version 2>&1` in
+*GNU*)
+  ac_cv_path_SED="$ac_path_SED" ac_path_SED_found=:;;
+*)
+  ac_count=0
+  $as_echo_n 0123456789 >"conftest.in"
+  while :
+  do
+    cat "conftest.in" "conftest.in" >"conftest.tmp"
+    mv "conftest.tmp" "conftest.in"
+    cp "conftest.in" "conftest.nl"
+    $as_echo '' >> "conftest.nl"
+    "$ac_path_SED" -f conftest.sed < "conftest.nl" >"conftest.out" 2>/dev/null || break
+    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
+    as_fn_arith $ac_count + 1 && ac_count=$as_val
+    if test $ac_count -gt ${ac_path_SED_max-0}; then
+      # Best one so far, save it but keep looking for a better one
+      ac_cv_path_SED="$ac_path_SED"
+      ac_path_SED_max=$ac_count
+    fi
+    # 10*(2^10) chars as input seems more than enough
+    test $ac_count -gt 10 && break
+  done
+  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
+esac
+
+      $ac_path_SED_found && break 3
+    done
+  done
+  done
+IFS=$as_save_IFS
+  if test -z "$ac_cv_path_SED"; then
+    as_fn_error $? "no acceptable sed could be found in \$PATH" "$LINENO" 5
+  fi
+else
+  ac_cv_path_SED=$SED
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_SED" >&5
+$as_echo "$ac_cv_path_SED" >&6; }
+ SED="$ac_cv_path_SED"
+  rm -f conftest.sed
 
 
 
@@ -6133,4 +6181,239 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
+
+
+
+# Remove all optimization flags from CFLAGS
+
+CFLAGS=`echo "$CFLAGS" | $SED -e 's/-O[0-9]*//g'`
+
+# Add the special gcc flags
+COVERAGE_CFLAGS="-O0 -fprofile-arcs -ftest-coverage"
+COVERAGE_LDFLAGS="-lgcov"
+
+# Copyright 2012 Canonical Ltd.
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
+# PURPOSE.  See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Checks for existence of coverage tools:
+#  * gcov
+#  * lcov
+#  * genhtml
+#  * gcovr
+#
+# Sets ac_cv_check_gcov to yes if tooling is present
+# and reports the executables to the variables LCOV, GCOVR and GENHTML.
+ # AC_TDD_GCOV
+
+
+
+  # Check whether --enable-gcov was given.
+if test "${enable_gcov+set}" = set; then :
+  enableval=$enable_gcov; use_gcov=yes
+else
+  use_gcov=no
+fi
+
+
+   if test "x$use_gcov" = "xyes"; then
+  HAVE_GCOV_TRUE=
+  HAVE_GCOV_FALSE='#'
+else
+  HAVE_GCOV_TRUE='#'
+  HAVE_GCOV_FALSE=
+fi
+
+
+  if test "x$use_gcov" = "xyes"; then
+  # we need gcc:
+  if test "$GCC" != "yes"; then
+    as_fn_error $? "GCC is required for --enable-gcov" "$LINENO" 5
+  fi
+
+  # Check if ccache is being used
+  # Extract the first word of "shtool", so it can be a program name with args.
+set dummy shtool; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_SHTOOL+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$SHTOOL"; then
+  ac_cv_prog_SHTOOL="$SHTOOL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_SHTOOL="shtool"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+SHTOOL=$ac_cv_prog_SHTOOL
+if test -n "$SHTOOL"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $SHTOOL" >&5
+$as_echo "$SHTOOL" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  if test "$SHTOOL"; then
+    case `$SHTOOL path $CC` in #(
+  *ccache*) :
+    gcc_ccache=yes ;; #(
+  *) :
+    gcc_ccache=no ;;
+esac
+  fi
+
+  if test "$gcc_ccache" = "yes" && (test -z "$CCACHE_DISABLE" || test "$CCACHE_DISABLE" != "1"); then
+    as_fn_error $? "ccache must be disabled when --enable-gcov option is used. You can disable ccache by setting environment variable CCACHE_DISABLE=1." "$LINENO" 5
+  fi
+
+  lcov_version_list="1.6 1.7 1.8 1.9 1.10"
+  # Extract the first word of "lcov", so it can be a program name with args.
+set dummy lcov; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_LCOV+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$LCOV"; then
+  ac_cv_prog_LCOV="$LCOV" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_LCOV="lcov"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+LCOV=$ac_cv_prog_LCOV
+if test -n "$LCOV"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LCOV" >&5
+$as_echo "$LCOV" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  # Extract the first word of "genhtml", so it can be a program name with args.
+set dummy genhtml; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_GENHTML+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$GENHTML"; then
+  ac_cv_prog_GENHTML="$GENHTML" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GENHTML="genhtml"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+GENHTML=$ac_cv_prog_GENHTML
+if test -n "$GENHTML"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GENHTML" >&5
+$as_echo "$GENHTML" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+
+  if test "$LCOV"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lcov version" >&5
+$as_echo_n "checking for lcov version... " >&6; }
+if ${glib_cv_lcov_version+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+      glib_cv_lcov_version=invalid
+      lcov_version=`$LCOV -v 2>/dev/null | $SED -e 's/^.* //'`
+      for lcov_check_version in $lcov_version_list; do
+        if test "$lcov_version" = "$lcov_check_version"; then
+          glib_cv_lcov_version="$lcov_check_version (ok)"
+        fi
+      done
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glib_cv_lcov_version" >&5
+$as_echo "$glib_cv_lcov_version" >&6; }
+  else
+    lcov_msg="To enable code coverage reporting you must have one of the following lcov versions installed: $lcov_version_list"
+    as_fn_error $? "$lcov_msg" "$LINENO" 5
+  fi
+
+  case $glib_cv_lcov_version in
+    ""|invalid)
+      lcov_msg="You must have one of the following versions of lcov: $lcov_version_list (found: $lcov_version)."
+      as_fn_error $? "$lcov_msg" "$LINENO" 5
+      LCOV="exit 0;"
+      ;;
+  esac
+
+  if test -z "$GENHTML"; then
+    as_fn_error $? "Could not find genhtml from the lcov package" "$LINENO" 5
+  fi
+
+  # Remove all optimization flags from CFLAGS
+
+  CFLAGS=`echo "$CFLAGS" | $SED -e 's/-O[0-9]*//g'`
+
+
+  # Add the special gcc flags
+  COVERAGE_CFLAGS="--coverage"
+  COVERAGE_CXXFLAGS="--coverage"
+  COVERAGE_LDFLAGS="-lgcov"
+
+fi
+
+
 
