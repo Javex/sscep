@@ -10,7 +10,7 @@ int scep_conf_init(char *filename) {
 	CONF *conf;
 
 	if(filename == NULL) {
-		return 0;
+		return -1;
 	}
 	conf = NCONF_new(NCONF_default());
 	if(!NCONF_load(conf, filename, &err)) {
@@ -47,12 +47,6 @@ int scep_conf_load(CONF *conf) {
 	if((var = NCONF_get_string(conf, SCEP_CONFIGURATION_SECTION, SCEP_CONFIGURATION_PARAM_CACERTFILE)) && !c_flag) {
 		c_flag = 1;
 		if(!(c_char = strdup(var)))
-			error_memory();
-	}
-
-	if((var = NCONF_get_string(conf, SCEP_CONFIGURATION_SECTION, SCEP_CONFIGURATION_PARAM_CAIDENTIFIER)) && !i_flag) {
-		i_flag = 1;
-		if(!(i_char = strdup(var)))
 			error_memory();
 	}
 
@@ -180,17 +174,17 @@ int scep_conf_load(CONF *conf) {
 				if(v_flag)
 					printf("%s: The store used will be %s\n", pname, var);
 				if(!strncmp(var, "LOCAL_MACHINE", 13)) {
-					scep_conf->engine->storelocation = 1;
+					scep_conf->engine->storelocation = LOCAL_MACHINE;
 				} else if(!strncmp(var, "CURRENT_USER", 12)) {
-					scep_conf->engine->storelocation = 0;
+					scep_conf->engine->storelocation = CURRENT_USER;
 				} else {
 					printf("%s: Provided storename unknown (%s). Will use the engines default.\n", pname, var);
-					scep_conf->engine->storelocation = 0;
+					scep_conf->engine->storelocation = CURRENT_USER;
 				}
 			} else {
 				if(v_flag)
 					printf("%s: No storename was provided. Will use the engines default.\n", pname);
-				scep_conf->engine->storelocation = 0;
+				scep_conf->engine->storelocation = CURRENT_USER;
 			}
 
 			
