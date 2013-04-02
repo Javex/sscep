@@ -29,7 +29,7 @@
 
 #ifdef _DEBUG
 #include <crtdbg.h>
-#endif
+#endif /* _DEBUG */
 
 #define snprintf _snprintf
 #define close _close
@@ -45,7 +45,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#endif
+#endif /* WIN32 */
 
 #include <openssl/evp.h>
 #include <openssl/bio.h>
@@ -350,4 +350,4 @@ int pkcs7_verify_unwrap(struct scep *s, char * cachainfile );
 char *url_encode (char *, size_t);
 
 /* End of Functions */
-#endif
+#endif /* SSCEP_H */
