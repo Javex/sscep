@@ -10,6 +10,7 @@ AC_CONFIG_SRCDIR([src/sscep.c])
 
 # Checks for programs.
 AC_PROG_CC
+AM_PROG_CC_C_O
 
 PKG_CHECK_MODULES([CHECK], [check >= 0.9.4])
 
@@ -30,5 +31,5 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([gethostbyname mempcpy memset socket strchr strdup strstr])
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile])
 AC_OUTPUT
