@@ -252,4 +252,54 @@ key_fingerprint(X509_REQ *req) {
 	return(ret);
 }
 
+char *handle_serial (char * serial)
+{
+	int hex = NULL != strchr (serial, ':');
+
+	/* Convert serial to a decimal serial when input is
+	   a hexidecimal representation of the serial */
+	if (hex)
+	{
+		unsigned int i,ii;
+		char *tmp_serial = (char*) calloc (strlen (serial) + 1,1);
+
+		for (i=0,ii=0; '\0'!=serial[i];i++)
+		{
+			if (':'!=serial[i])
+				tmp_serial[ii++]=serial[i];
+		}
+		serial=tmp_serial;
+	}
+	else
+	{
+		unsigned int i;
+		for (i=0; ! hex && '\0' != serial[i]; i++)
+			hex = 'a'==serial[i]||'b'==serial[i]||'c'==serial[i]||'d'==serial[i]||'e'==serial[i]||'f'==serial[i];
+	}
+
+	if (hex)
+	{
+		ASN1_INTEGER* ai;
+ 		BIGNUM *ret;
+ 		BIO* in = BIO_new_mem_buf(serial, -1);
+  		char buf[1025];
+  		ai=ASN1_INTEGER_new();
+  		if (ai == NULL) return NULL;
+   		if (!a2i_ASN1_INTEGER(in,ai,buf,1024))
+   		{
+			return NULL;
+   		}
+   		ret=ASN1_INTEGER_to_BN(ai,NULL);
+   		if (ret == NULL)
+   		{
+			return NULL;
+   		}
+   		else
+   		{
+    		 serial = BN_bn2dec(ret);
+   		}
+  	}
+
+	return serial;
+} /* handle_serial */
 

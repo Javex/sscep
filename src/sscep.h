@@ -270,6 +270,9 @@ struct scep {
 /* Print usage information */
 void usage(void);
 
+/* Convert hex serial to numeric */
+char *handle_serial (char * serial);
+
 /* Send HTTP message */
 int send_msg (struct http_reply *, char *, char *, int, int);
 

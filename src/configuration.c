@@ -306,7 +306,7 @@ int scep_conf_load_operation_getnextca(CONF *conf) {
 			error_memory();
 	}
 
-	if((var = NCONF_get_string(conf, SCEP_CONFIGURATION_SECTION_GETCA, SCEP_CONFIGURATION_PARAM_FINGERPRINT)) && !F_flag) {
+	if((var = NCONF_get_string(conf, SCEP_CONFIGURATION_SECTION_GETNEXTCA, SCEP_CONFIGURATION_PARAM_FINGERPRINT)) && !F_flag) {
 		F_flag = 1;
 		if(!(F_char = strdup(var)))
 			error_memory();
@@ -398,7 +398,7 @@ int scep_conf_load_operation_getcert(CONF *conf) {
 
 	if((var = NCONF_get_string(conf, SCEP_CONFIGURATION_SECTION_GETCERT, SCEP_CONFIGURATION_PARAM_GETCERTSERIAL)) && !s_flag) {
 		s_flag = 1;
-		if(!(s_char = strdup(var)))
+		if(!(s_char = strdup(handle_serial(var))))
 			error_memory();
 	}
 
