@@ -42,6 +42,9 @@ Verbose = true
 Debug = true
 
 
+MonitorInformation=key1=value1&key2=value2
+
+
 [sscep_engine]
 ################################################################
 # This section defines options for engines
