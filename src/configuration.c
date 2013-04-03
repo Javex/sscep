@@ -41,7 +41,7 @@ int scep_conf_load(CONF *conf) {
 	char *windir;
 #endif
 
-	int ret;
+	int ret = 0;
 
 	//load global scep vars
 	if((var = NCONF_get_string(conf, SCEP_CONFIGURATION_SECTION, SCEP_CONFIGURATION_PARAM_CACERTFILE)) && !c_flag) {
@@ -262,7 +262,7 @@ int scep_conf_load(CONF *conf) {
 	}
 
 
-	return 0;
+	return ret;
 }
 
 int scep_conf_load_operation_getca(CONF *conf) {
