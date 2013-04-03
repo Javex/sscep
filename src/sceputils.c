@@ -252,6 +252,18 @@ key_fingerprint(X509_REQ *req) {
 	return(ret);
 }
 
+/*
+ * Check serial and possibly convert it from hex (base 16) to base 10.
+ * Note: All hex values must come in even pairs, e.g.
+ * "12:34:56" or just "0A", never "A". Furthermore, this function determines
+ * whether the serial is hex or base 10 by looking at the colons ("12:34") and
+ * present hex chars (A-F,a-f). However, "12" is *always* regarded a base 10 value
+ * even though in base 16 it is a valid representation of "18" in base 10!.
+ * To force interpretation as a hex, prepend "00:" to your string.
+ *
+ * Todo: Rewrite this method to something cleaner than just plain guessing
+ * (explicit parameter?).
+ */
 char *handle_serial (char * serial)
 {
 	int hex = NULL != strchr (serial, ':');
@@ -274,7 +286,22 @@ char *handle_serial (char * serial)
 	{
 		unsigned int i;
 		for (i=0; ! hex && '\0' != serial[i]; i++)
-			hex = 'a'==serial[i]||'b'==serial[i]||'c'==serial[i]||'d'==serial[i]||'e'==serial[i]||'f'==serial[i];
+			if('a'==serial[i] ||
+			   'b'==serial[i] ||
+			   'c'==serial[i] ||
+			   'd'==serial[i] ||
+			   'e'==serial[i] ||
+			   'f'==serial[i] ||
+			   'A'==serial[i] ||
+			   'B'==serial[i] ||
+			   'C'==serial[i] ||
+			   'D'==serial[i] ||
+			   'E'==serial[i] ||
+			   'F'==serial[i])
+			{
+				hex = 1;
+				break;
+			}
 	}
 
 	if (hex)
