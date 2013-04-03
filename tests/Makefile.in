@@ -47,8 +47,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-TESTS = test_configuration$(EXEEXT)
-check_PROGRAMS = test_configuration$(EXEEXT)
+TESTS = test_configuration$(EXEEXT) test_ias$(EXEEXT) \
+	test_sceputils$(EXEEXT)
+check_PROGRAMS = test_configuration$(EXEEXT) test_ias$(EXEEXT) \
+	test_sceputils$(EXEEXT)
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/build-aux/depcomp \
@@ -64,12 +66,26 @@ CONFIG_CLEAN_VPATH_FILES =
 am_test_configuration_OBJECTS =  \
 	test_configuration-test_configuration.$(OBJEXT)
 test_configuration_OBJECTS = $(am_test_configuration_OBJECTS)
+am__DEPENDENCIES_1 =
 test_configuration_DEPENDENCIES =  \
 	$(top_builddir)/src/sscep-configuration.o \
 	$(top_builddir)/src/sscep-sceputils.o \
-	$(top_builddir)/src/sscep-ias.o
+	$(top_builddir)/src/sscep-ias.o $(am__DEPENDENCIES_1)
 test_configuration_LINK = $(CCLD) $(test_configuration_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+am_test_ias_OBJECTS = test_ias-test_ias.$(OBJEXT)
+test_ias_OBJECTS = $(am_test_ias_OBJECTS)
+test_ias_DEPENDENCIES = $(top_builddir)/src/sscep-ias.o \
+	$(am__DEPENDENCIES_1)
+test_ias_LINK = $(CCLD) $(test_ias_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_test_sceputils_OBJECTS = test_sceputils-test_sceputils.$(OBJEXT)
+test_sceputils_OBJECTS = $(am_test_sceputils_OBJECTS)
+test_sceputils_DEPENDENCIES = $(top_builddir)/src/sscep-sceputils.o \
+	$(top_builddir)/src/sscep-ias.o \
+	$(top_builddir)/src/sscep-fileutils.o $(am__DEPENDENCIES_1)
+test_sceputils_LINK = $(CCLD) $(test_sceputils_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -102,8 +118,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(test_configuration_SOURCES)
-DIST_SOURCES = $(test_configuration_SOURCES)
+SOURCES = $(test_configuration_SOURCES) $(test_ias_SOURCES) \
+	$(test_sceputils_SOURCES)
+DIST_SOURCES = $(test_configuration_SOURCES) $(test_ias_SOURCES) \
+	$(test_sceputils_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -431,9 +449,16 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+check_LDADD = -lcrypto @CHECK_LIBS@ -lgcov
 test_configuration_SOURCES = test_configuration.c $(top_builddir)/src/configuration.h
 test_configuration_CFLAGS = @CHECK_CFLAGS@
-test_configuration_LDADD = $(top_builddir)/src/sscep-configuration.o $(top_builddir)/src/sscep-sceputils.o $(top_builddir)/src/sscep-ias.o -lcrypto @CHECK_LIBS@ -lgcov
+test_configuration_LDADD = $(top_builddir)/src/sscep-configuration.o $(top_builddir)/src/sscep-sceputils.o $(top_builddir)/src/sscep-ias.o $(check_LDADD)
+test_ias_SOURCES = test_ias.c $(top_builddir)/src/ias.h
+test_ias_CFLAGS = @CHECK_CFLAGS@
+test_ias_LDADD = $(top_builddir)/src/sscep-ias.o $(check_LDADD)
+test_sceputils_SOURCES = test_sceputils.c $(top_builddir)/src/ias.h $(top_builddir)/src/sscep.h
+test_sceputils_CFLAGS = @CHECK_CFLAGS@
+test_sceputils_LDADD = $(top_builddir)/src/sscep-sceputils.o $(top_builddir)/src/sscep-ias.o $(top_builddir)/src/sscep-fileutils.o $(check_LDADD)
 all: all-am
 
 .SUFFIXES:
@@ -474,6 +499,12 @@ clean-checkPROGRAMS:
 test_configuration$(EXEEXT): $(test_configuration_OBJECTS) $(test_configuration_DEPENDENCIES) $(EXTRA_test_configuration_DEPENDENCIES) 
 	@rm -f test_configuration$(EXEEXT)
 	$(AM_V_CCLD)$(test_configuration_LINK) $(test_configuration_OBJECTS) $(test_configuration_LDADD) $(LIBS)
+test_ias$(EXEEXT): $(test_ias_OBJECTS) $(test_ias_DEPENDENCIES) $(EXTRA_test_ias_DEPENDENCIES) 
+	@rm -f test_ias$(EXEEXT)
+	$(AM_V_CCLD)$(test_ias_LINK) $(test_ias_OBJECTS) $(test_ias_LDADD) $(LIBS)
+test_sceputils$(EXEEXT): $(test_sceputils_OBJECTS) $(test_sceputils_DEPENDENCIES) $(EXTRA_test_sceputils_DEPENDENCIES) 
+	@rm -f test_sceputils$(EXEEXT)
+	$(AM_V_CCLD)$(test_sceputils_LINK) $(test_sceputils_OBJECTS) $(test_sceputils_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -482,6 +513,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_configuration-test_configuration.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ias-test_ias.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_sceputils-test_sceputils.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -510,6 +543,34 @@ test_configuration-test_configuration.obj: test_configuration.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_configuration.c' object='test_configuration-test_configuration.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_configuration_CFLAGS) $(CFLAGS) -c -o test_configuration-test_configuration.obj `if test -f 'test_configuration.c'; then $(CYGPATH_W) 'test_configuration.c'; else $(CYGPATH_W) '$(srcdir)/test_configuration.c'; fi`
+
+test_ias-test_ias.o: test_ias.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_ias_CFLAGS) $(CFLAGS) -MT test_ias-test_ias.o -MD -MP -MF $(DEPDIR)/test_ias-test_ias.Tpo -c -o test_ias-test_ias.o `test -f 'test_ias.c' || echo '$(srcdir)/'`test_ias.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_ias-test_ias.Tpo $(DEPDIR)/test_ias-test_ias.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_ias.c' object='test_ias-test_ias.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_ias_CFLAGS) $(CFLAGS) -c -o test_ias-test_ias.o `test -f 'test_ias.c' || echo '$(srcdir)/'`test_ias.c
+
+test_ias-test_ias.obj: test_ias.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_ias_CFLAGS) $(CFLAGS) -MT test_ias-test_ias.obj -MD -MP -MF $(DEPDIR)/test_ias-test_ias.Tpo -c -o test_ias-test_ias.obj `if test -f 'test_ias.c'; then $(CYGPATH_W) 'test_ias.c'; else $(CYGPATH_W) '$(srcdir)/test_ias.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_ias-test_ias.Tpo $(DEPDIR)/test_ias-test_ias.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_ias.c' object='test_ias-test_ias.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_ias_CFLAGS) $(CFLAGS) -c -o test_ias-test_ias.obj `if test -f 'test_ias.c'; then $(CYGPATH_W) 'test_ias.c'; else $(CYGPATH_W) '$(srcdir)/test_ias.c'; fi`
+
+test_sceputils-test_sceputils.o: test_sceputils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_sceputils_CFLAGS) $(CFLAGS) -MT test_sceputils-test_sceputils.o -MD -MP -MF $(DEPDIR)/test_sceputils-test_sceputils.Tpo -c -o test_sceputils-test_sceputils.o `test -f 'test_sceputils.c' || echo '$(srcdir)/'`test_sceputils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_sceputils-test_sceputils.Tpo $(DEPDIR)/test_sceputils-test_sceputils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_sceputils.c' object='test_sceputils-test_sceputils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_sceputils_CFLAGS) $(CFLAGS) -c -o test_sceputils-test_sceputils.o `test -f 'test_sceputils.c' || echo '$(srcdir)/'`test_sceputils.c
+
+test_sceputils-test_sceputils.obj: test_sceputils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_sceputils_CFLAGS) $(CFLAGS) -MT test_sceputils-test_sceputils.obj -MD -MP -MF $(DEPDIR)/test_sceputils-test_sceputils.Tpo -c -o test_sceputils-test_sceputils.obj `if test -f 'test_sceputils.c'; then $(CYGPATH_W) 'test_sceputils.c'; else $(CYGPATH_W) '$(srcdir)/test_sceputils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_sceputils-test_sceputils.Tpo $(DEPDIR)/test_sceputils-test_sceputils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_sceputils.c' object='test_sceputils-test_sceputils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_sceputils_CFLAGS) $(CFLAGS) -c -o test_sceputils-test_sceputils.obj `if test -f 'test_sceputils.c'; then $(CYGPATH_W) 'test_sceputils.c'; else $(CYGPATH_W) '$(srcdir)/test_sceputils.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -707,6 +768,20 @@ recheck: all $(check_PROGRAMS)
 test_configuration.log: test_configuration$(EXEEXT)
 	@p='test_configuration$(EXEEXT)'; \
 	b='test_configuration'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_ias.log: test_ias$(EXEEXT)
+	@p='test_ias$(EXEEXT)'; \
+	b='test_ias'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_sceputils.log: test_sceputils$(EXEEXT)
+	@p='test_sceputils$(EXEEXT)'; \
+	b='test_sceputils'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
