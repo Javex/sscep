@@ -26,19 +26,6 @@ int i2d_pkcs7_issuer_and_subject(pkcs7_issuer_and_subject *a,
 	M_ASN1_I2D_finish();
 }
 
-pkcs7_issuer_and_subject *
-d2i_pkcs7_issuer_and_subject(pkcs7_issuer_and_subject **a,
-		unsigned char **pp, long length) {
-
-	M_ASN1_D2I_vars(a, pkcs7_issuer_and_subject *,
-		pkcs7_issuer_and_subject_new);
-	M_ASN1_D2I_Init();
-	M_ASN1_D2I_start_sequence();
-	M_ASN1_D2I_get(ret->issuer,d2i_X509_NAME);
-	M_ASN1_D2I_get(ret->subject,d2i_X509_NAME);
-	M_ASN1_D2I_Finish(a,pkcs7_issuer_and_subject_free, 99);
-}
-
 pkcs7_issuer_and_subject *pkcs7_issuer_and_subject_new(void) {
 
 	pkcs7_issuer_and_subject *ret=NULL;
