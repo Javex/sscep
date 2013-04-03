@@ -14,3 +14,7 @@ o Fetch CRL via CA cert HTTP distribution point (not really a SCEP thing,
 
 o Write Unit Tests
 
+o Fix handle_serial in sceputils.c to avoid guessing (adjust program afterwards)
+
+o Better error strings: Use the GNU format or similar to display better error messages
+
