@@ -12,4 +12,5 @@ o Add meaningful exit status instead of SCEP_PKISTATUS_ERROR in some places
 o Fetch CRL via CA cert HTTP distribution point (not really a SCEP thing,
   but nice feature anyway..)
 
+o Write Unit Tests
 
