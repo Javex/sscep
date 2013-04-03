@@ -414,61 +414,6 @@ read_cert(X509** cert, char* filename) {
 	}
 	fclose(file);
 }
-/*
-void read_cert_Engine(X509** cert, char* id, ENGINE *e, char* filename)
-{
-	BIO *bio, *b64;
-	PCCERT_CONTEXT ctx = NULL;
-	int ret;
-	HCERTSTORE store;
-	DWORD cbSize;
-	LPTSTR pszName;
-	LPSTR str;
-	FILE *certfile;
-	
-	store = CertOpenSystemStore(0, L"MY");
-	
-	ctx = CertFindCertificateInStore(store, MY_ENCODING_TYPE, 0, CERT_FIND_SUBJECT_STR, (LPCSTR) id, NULL);
-	if(!ctx) {
-		while(ctx = CertEnumCertificatesInStore(store, ctx))
-		{
-			cbSize = CertGetNameString(ctx, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, NULL, 0);
-			pszName = (LPTSTR)malloc(cbSize * sizeof(TCHAR));
-			CertGetNameString(ctx, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszName, cbSize);
-			cbSize = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS | WC_COMPOSITECHECK | WC_DEFAULTCHAR, (LPCWSTR) pszName, -1, NULL, 0, NULL, NULL);
-			str = (LPSTR)malloc(cbSize * sizeof(LPSTR));
-			WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS | WC_COMPOSITECHECK | WC_DEFAULTCHAR, (LPCWSTR) pszName, -1, str, cbSize, NULL, NULL);
-			if(strstr(str, id)) {
-				ret = 0;
-				break;
-			} else {
-				ret = 127;
-			}
-		}
-	}
-	if(!ctx || ret != 0)
-	{
-		fprintf(stderr, "%s: cannot find Certificate with subject %s in store\n", pname, id);
-		exit(SCEP_PKISTATUS_FILE);
-	}
-
-	certfile = fopen(filename, "w");
-	fputs("-----BEGIN CERTIFICATE-----\n", certfile);
-	fclose(certfile);
-
-	b64 = BIO_new(BIO_f_base64());
-	bio = BIO_new_file(filename, "a");
-	bio = BIO_push(b64, bio);
-	ret = BIO_write(bio, ctx->pbCertEncoded, ctx->cbCertEncoded);
-	ret = BIO_flush(bio);
-	BIO_free_all(bio);
-
-	certfile = fopen(filename, "a");
-	fputs("-----END CERTIFICATE-----", certfile);
-	fclose(certfile);
-
-	read_cert(cert, filename);
-}*/
 
 
 /* Read private key */
