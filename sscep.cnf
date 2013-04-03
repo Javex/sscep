@@ -120,6 +120,14 @@ storelocation = LOCAL_MACHINE
 # This is normally not necessary
 # JavaPath = 
 
+[sscep_engine_pkcs11]
+# This section defines JKSEngine specific settings.
+# Only if engine_id is set to "pkcs11" this will
+# be loaded, otherwise ignored.
+
+# Configure a PIN that should be passed to the PKCS11 module.
+#PIN=
+
 
 [sscep_getca]
 # Options for retrieving CA Certificates (operation getca)
