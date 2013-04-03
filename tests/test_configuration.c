@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "../src/configuration.h"
 
-#define TEST_CONFIG_FILE "test_sscep.cnf"
+#define TEST_CONFIG_FILE "test-conf/test_sscep.cnf"
 
 CONF *conf;
 
@@ -25,6 +25,14 @@ void teardown(void)
 	}
 }
 
+void tc_load_setup(void)
+{
+	setup();
+	scep_conf = malloc(sizeof(*scep_conf));
+	scep_conf->engine = malloc(sizeof(struct scep_engine_conf_st));
+	scep_conf->engine_str = NULL;
+}
+
 START_TEST(test_scep_conf_init)
 {
 	char *filename = TEST_CONFIG_FILE;
@@ -43,9 +51,27 @@ START_TEST(test_scep_conf_init_exit)
 }
 END_TEST
 
+START_TEST(test_scep_conf_init_exit_invalid_format)
+{
+	scep_conf_init("test-conf/test_sscep_invalid_format.cnf");
+}
+END_TEST
+
+START_TEST(test_error_memory)
+{
+	error_memory();
+}
+END_TEST
+
+START_TEST(test_dump_conf)
+{
+	scep_conf_init(TEST_CONFIG_FILE);
+	scep_dump_conf();
+}
+END_TEST
+
 START_TEST(test_scep_conf_load)
 {
-	char *filename = TEST_CONFIG_FILE;
 	int ret;
 
 	// specify *some* operation flag, so the function does not return badly
@@ -77,37 +103,131 @@ START_TEST(test_scep_conf_load)
 }
 END_TEST
 
-START_TEST(test_scep_conf_init_enroll)
+START_TEST(test_scep_conf_load_operation_switch)
 {
-	char *filename = TEST_CONFIG_FILE;
+	int ret, i;
+	int ops[] = {SCEP_OPERATION_ENROLL,
+				 SCEP_OPERATION_GETCA,
+				 SCEP_OPERATION_GETCERT,
+				 SCEP_OPERATION_GETCRL,
+				 SCEP_OPERATION_GETNEXTCA};
+	scep_conf = malloc(sizeof(*scep_conf));
+	scep_conf->engine = malloc(sizeof(struct scep_engine_conf_st));
+	scep_conf->engine_str = NULL;
+	for(i=0; i<(sizeof(ops)/sizeof(int)); ++i)
+	{
+		operation_flag = ops[i];
+		ret = scep_conf_load(conf);
+		fail_if(ret);
+	}
+
+	operation_flag = NULL;
+	ret = scep_conf_load(conf);
+	ck_assert(ret == -1);
+}
+END_TEST
+
+START_TEST(test_scep_conf_load_no_engine_section)
+{
 	int ret;
+	CONF *local_conf;
+	long err;
+	local_conf = NCONF_new(NCONF_default());
+	NCONF_load(local_conf, "test-conf/test_sscep_no_engine.cnf", &err);
 	operation_flag = SCEP_OPERATION_ENROLL;
+	ret = scep_conf_load(local_conf);
+	fail_if(ret);
+	NCONF_free(local_conf);
+}
+END_TEST
 
-	ret = scep_conf_init(filename);
-	fail_unless(ret == 0, "Function did not return cleanly.");
+START_TEST(test_scep_conf_load_missing_engine_section)
+{
+	CONF *local_conf;
+	long err;
+	local_conf = NCONF_new(NCONF_default());
+	NCONF_load(local_conf, "test-conf/test_sscep_missing_engine_section.cnf", &err);
+	operation_flag = SCEP_OPERATION_ENROLL;
+	scep_conf_load(local_conf);
+	NCONF_free(local_conf);
+}
+END_TEST
 
-	// [sscep] section
-	ck_assert(strcmp(scep_conf->engine_str, "sscep_engine") == 0);
-	ck_assert(u_flag && strcmp(url_char, "http://my-test-url.com") == 0);
-	ck_assert(p_flag && strcmp(p_char, "127.0.0.1:8000") == 0);
-	ck_assert(c_flag && strcmp(c_char, "TestCACert.crt") == 0);
-	ck_assert(E_flag && strcmp(E_char, "des") == 0);
-	ck_assert(S_flag && strcmp(S_char, "sha1") == 0);
-	ck_assert(v_flag);
-	ck_assert(d_flag);
+START_TEST(test_scep_conf_load_missing_engine_id)
+{
+	CONF *local_conf;
+	long err;
+	local_conf = NCONF_new(NCONF_default());
+	NCONF_load(local_conf, "test-conf/test_sscep_missing_engine_id.cnf", &err);
+	operation_flag = SCEP_OPERATION_ENROLL;
+	scep_conf_load(local_conf);
+	NCONF_free(local_conf);
+}
+END_TEST
 
-	// [sscep_engine] section
-	ck_assert(strcmp(scep_conf->engine->engine_id, "capi") == 0);
-	ck_assert(strcmp(scep_conf->engine->dynamic_path, "..\\capi\\capi.dll") == 0);
+START_TEST(test_scep_conf_load_capi_defaults)
+{
+	CONF *local_conf;
+	long err;
+	int ret;
+	local_conf = NCONF_new(NCONF_default());
+	NCONF_load(local_conf, "test-conf/test_sscep_capi_defaults.cnf", &err);
+	operation_flag = SCEP_OPERATION_ENROLL;
+	ret = scep_conf_load(local_conf);
+	fail_if(ret);
+	ck_assert_str_eq(scep_conf->engine->new_key_location, "REQUEST");
+	ck_assert(scep_conf->engine->storelocation == CURRENT_USER);
+	NCONF_free(local_conf);
 
-	// [sscep_engine_capi] section
-	ck_assert(strcmp(scep_conf->engine->new_key_location, "REQUEST") == 0);
-	ck_assert(scep_conf->engine->storelocation == 1);
+	local_conf = NCONF_new(NCONF_default());
+	NCONF_load(local_conf, "test-conf/test_sscep_capi_current_user.cnf", &err);
+	ret = scep_conf_load(local_conf);
+	fail_if(ret);
+	ck_assert(scep_conf->engine->storelocation == CURRENT_USER);
+	NCONF_free(local_conf);
 
-	// A single check is sufficient here: We only need to make sure that this
-	// section of code was entered at all.
-	ck_assert(k_flag && strcmp(k_char, "Test.key") == 0);
+	local_conf = NCONF_new(NCONF_default());
+	NCONF_load(local_conf, "test-conf/test_sscep_capi_invalid_storename.cnf", &err);
+	ret = scep_conf_load(local_conf);
+	fail_if(ret);
 
+	ck_assert(scep_conf->engine->storelocation == CURRENT_USER);
+
+	NCONF_free(local_conf);
+}
+END_TEST
+
+START_TEST(test_scep_conf_load_jksengine)
+{
+	CONF *local_conf;
+	long err;
+	int ret;
+	local_conf = NCONF_new(NCONF_default());
+	NCONF_load(local_conf, "test-conf/test_sscep_jksengine.cnf", &err);
+	operation_flag = SCEP_OPERATION_ENROLL;
+	ret = scep_conf_load(local_conf);
+	fail_if(ret);
+	ck_assert_str_eq(scep_conf->engine->storepass, "helloworld");
+	ck_assert_str_eq(scep_conf->engine->jconnpath, "/path/to/ConnJKSEngine.jar");
+	ck_assert_str_eq(scep_conf->engine->provider, "SomeProvider");
+	ck_assert_str_eq(scep_conf->engine->javapath, "/path/to/java");
+	NCONF_free(local_conf);
+}
+END_TEST
+
+START_TEST(test_scep_conf_load_pkcs11)
+{
+	CONF *local_conf;
+	long err;
+	int ret;
+	local_conf = NCONF_new(NCONF_default());
+	NCONF_load(local_conf, "test-conf/test_sscep_pkcs11engine.cnf", &err);
+	operation_flag = SCEP_OPERATION_ENROLL;
+	ret = scep_conf_load(local_conf);
+	fail_if(ret);
+	ck_assert_str_eq(scep_conf->engine->pin, "123");
+	ck_assert_str_eq(scep_conf->engine->module_path, "/path/to/module.so");
+	NCONF_free(local_conf);
 }
 END_TEST
 
@@ -133,14 +253,12 @@ START_TEST(test_scep_conf_load_operation_enroll)
 }
 END_TEST
 
-START_TEST(test_scep_conf_init_getca)
+START_TEST(test_scep_conf_load_operation_getca)
 {
-	char *filename = TEST_CONFIG_FILE;
 	int ret;
-	operation_flag = SCEP_OPERATION_GETCA;
 
-	ret = scep_conf_init(filename);
-	fail_unless(ret == 0, "Function did not return cleanly.");
+	ret = scep_conf_load_operation_getca(conf);
+	fail_if(ret);
 
 	// [sscep_getca] section
 	ck_assert(i_flag && strcmp(i_char, "TestCAIdentifier") == 0);
@@ -149,14 +267,12 @@ START_TEST(test_scep_conf_init_getca)
 }
 END_TEST
 
-START_TEST(test_scep_conf_init_getcert)
+START_TEST(test_scep_conf_load_operation_getcert)
 {
-	char *filename = TEST_CONFIG_FILE;
 	int ret;
-	operation_flag = SCEP_OPERATION_GETCERT;
 
-	ret = scep_conf_init(filename);
-	fail_unless(ret == 0, "Function did not return cleanly.");
+	ret = scep_conf_load_operation_getcert(conf);
+	fail_if(ret);
 
 	// [sscep_getcert] section
 	ck_assert(k_flag && strcmp(k_char, "Test.key") == 0);
@@ -167,14 +283,12 @@ START_TEST(test_scep_conf_init_getcert)
 }
 END_TEST
 
-START_TEST(test_scep_conf_init_getcrl)
+START_TEST(test_scep_conf_load_operation_getcrl)
 {
-	char *filename = TEST_CONFIG_FILE;
 	int ret;
-	operation_flag = SCEP_OPERATION_GETCRL;
 
-	ret = scep_conf_init(filename);
-	fail_unless(ret == 0, "Function did not return cleanly.");
+	ret = scep_conf_load_operation_getcrl(conf);
+	fail_if(ret);
 
 	// [sscep_getcrl] section
 	ck_assert(k_flag && strcmp(k_char, "Test.key") == 0);
@@ -184,14 +298,12 @@ START_TEST(test_scep_conf_init_getcrl)
 }
 END_TEST
 
-START_TEST(test_scep_conf_init_getnextca)
+START_TEST(test_scep_conf_load_operation_getnextca)
 {
-	char *filename = TEST_CONFIG_FILE;
 	int ret;
-	operation_flag = SCEP_OPERATION_GETNEXTCA;
 
-	ret = scep_conf_init(filename);
-	fail_unless(ret == 0, "Function did not return cleanly.");
+	ret = scep_conf_load_operation_getnextca(conf);
+	fail_if(ret);
 
 	// [sscep_getnextca] section
 	ck_assert(i_flag && strcmp(i_char, "TestCAIdentifier") == 0);
@@ -207,23 +319,36 @@ Suite * scep_conf_suite(void)
 
 	/* Core test case */
 	TCase *tc_core = tcase_create("Core");
+	TCase *tc_load = tcase_create("Config load");
 	TCase *tc_operations = tcase_create("Operations");
 
 	tcase_add_checked_fixture(tc_core, setup, teardown);
 	tcase_add_test(tc_core, test_scep_conf_init);
 	tcase_add_exit_test(tc_core, test_scep_conf_init_exit, SCEP_PKISTATUS_FILE);
-	tcase_add_test(tc_core, test_scep_conf_load);
+	tcase_add_exit_test(tc_core, test_scep_conf_init_exit_invalid_format, SCEP_PKISTATUS_FILE);
+	tcase_add_exit_test(tc_core, test_error_memory, 1);
+	tcase_add_exit_test(tc_core, test_dump_conf, 0);
+
+	tcase_add_checked_fixture(tc_load, tc_load_setup, teardown);
+	tcase_add_test(tc_load, test_scep_conf_load);
+	tcase_add_test(tc_load, test_scep_conf_load_operation_switch);
+	tcase_add_test(tc_load, test_scep_conf_load_no_engine_section);
+	tcase_add_exit_test(tc_load, test_scep_conf_load_missing_engine_section, SCEP_PKISTATUS_FILE);
+	tcase_add_exit_test(tc_load, test_scep_conf_load_missing_engine_id, SCEP_PKISTATUS_FILE);
+	tcase_add_test(tc_load, test_scep_conf_load_capi_defaults);
+	tcase_add_test(tc_load, test_scep_conf_load_jksengine);
+	tcase_add_test(tc_load, test_scep_conf_load_pkcs11);
 
 
 	tcase_add_checked_fixture(tc_operations, setup, teardown);
-	tcase_add_test(tc_operations, test_scep_conf_init_enroll);
 	tcase_add_test(tc_operations, test_scep_conf_load_operation_enroll);
-	tcase_add_test(tc_operations, test_scep_conf_init_getca);
-	tcase_add_test(tc_operations, test_scep_conf_init_getcert);
-	tcase_add_test(tc_operations, test_scep_conf_init_getcrl);
-	tcase_add_test(tc_operations, test_scep_conf_init_getnextca);
+	tcase_add_test(tc_operations, test_scep_conf_load_operation_getca);
+	tcase_add_test(tc_operations, test_scep_conf_load_operation_getcert);
+	tcase_add_test(tc_operations, test_scep_conf_load_operation_getcrl);
+	tcase_add_test(tc_operations, test_scep_conf_load_operation_getnextca);
 
 	suite_add_tcase(s, tc_core);
+	suite_add_tcase(s, tc_load);
 	suite_add_tcase(s, tc_operations);
 
 	return s;
