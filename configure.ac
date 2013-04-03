@@ -23,6 +23,13 @@ PKG_CHECK_MODULES([CHECK], [check >= 0.9.4])
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h libintl.h malloc.h netdb.h netinet/in.h stdlib.h string.h strings.h sys/socket.h unistd.h openssl/*.h])
 
+
+m4_include([gcov.m4])
+AC_TDD_GCOV
+AC_SUBST(COVERAGE_CFLAGS)
+AC_SUBST(COVERAGE_LDFLAGS)
+
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 
@@ -35,16 +42,3 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile])
 AC_OUTPUT
 
-
-# Remove all optimization flags from CFLAGS
-changequote({,})
-CFLAGS=`echo "$CFLAGS" | $SED -e 's/-O[0-9]*//g'`
-changequote([,])
-# Add the special gcc flags
-COVERAGE_CFLAGS="-O0 -fprofile-arcs -ftest-coverage"
-COVERAGE_LDFLAGS="-lgcov"
-
-m4_include([gcov.m4])
-AC_TDD_GCOV
-AC_SUBST(COVERAGE_CFLAGS)
-AC_SUBST(COVERAGE_LDFLAGS)

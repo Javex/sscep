@@ -62,11 +62,15 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_sscep_OBJECTS = sscep.$(OBJEXT) init.$(OBJEXT) net.$(OBJEXT) \
-	sceputils.$(OBJEXT) pkcs7.$(OBJEXT) ias.$(OBJEXT) \
-	fileutils.$(OBJEXT) configuration.$(OBJEXT) engine.$(OBJEXT)
+am_sscep_OBJECTS = sscep-sscep.$(OBJEXT) sscep-init.$(OBJEXT) \
+	sscep-net.$(OBJEXT) sscep-sceputils.$(OBJEXT) \
+	sscep-pkcs7.$(OBJEXT) sscep-ias.$(OBJEXT) \
+	sscep-fileutils.$(OBJEXT) sscep-configuration.$(OBJEXT) \
+	sscep-engine.$(OBJEXT)
 sscep_OBJECTS = $(am_sscep_OBJECTS)
 sscep_DEPENDENCIES =
+sscep_LINK = $(CCLD) $(sscep_CFLAGS) $(CFLAGS) $(sscep_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -83,6 +87,10 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 AM_V_CC = $(am__v_CC_@AM_V@)
@@ -222,6 +230,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 sscep_SOURCES = sscep.c init.c net.c sceputils.c pkcs7.c ias.c fileutils.c configuration.c engine.c
 sscep_LDADD = -lcrypto
+sscep_CFLAGS = $(COVERAGE_CFLAGS)
+sscep_LDFLAGS = $(COVERAGE_LDFLAGS)
 all: all-am
 
 .SUFFIXES:
@@ -300,7 +310,7 @@ clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 sscep$(EXEEXT): $(sscep_OBJECTS) $(sscep_DEPENDENCIES) $(EXTRA_sscep_DEPENDENCIES) 
 	@rm -f sscep$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(sscep_OBJECTS) $(sscep_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(sscep_LINK) $(sscep_OBJECTS) $(sscep_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -308,15 +318,15 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/configuration.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/engine.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileutils.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ias.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/init.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/net.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pkcs7.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sceputils.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-configuration.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-engine.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-fileutils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-ias.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-init.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-net.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-pkcs7.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-sceputils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-sscep.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -331,6 +341,132 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+sscep-sscep.o: sscep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-sscep.o -MD -MP -MF $(DEPDIR)/sscep-sscep.Tpo -c -o sscep-sscep.o `test -f 'sscep.c' || echo '$(srcdir)/'`sscep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-sscep.Tpo $(DEPDIR)/sscep-sscep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sscep.c' object='sscep-sscep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-sscep.o `test -f 'sscep.c' || echo '$(srcdir)/'`sscep.c
+
+sscep-sscep.obj: sscep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-sscep.obj -MD -MP -MF $(DEPDIR)/sscep-sscep.Tpo -c -o sscep-sscep.obj `if test -f 'sscep.c'; then $(CYGPATH_W) 'sscep.c'; else $(CYGPATH_W) '$(srcdir)/sscep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-sscep.Tpo $(DEPDIR)/sscep-sscep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sscep.c' object='sscep-sscep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-sscep.obj `if test -f 'sscep.c'; then $(CYGPATH_W) 'sscep.c'; else $(CYGPATH_W) '$(srcdir)/sscep.c'; fi`
+
+sscep-init.o: init.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-init.o -MD -MP -MF $(DEPDIR)/sscep-init.Tpo -c -o sscep-init.o `test -f 'init.c' || echo '$(srcdir)/'`init.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-init.Tpo $(DEPDIR)/sscep-init.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='init.c' object='sscep-init.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-init.o `test -f 'init.c' || echo '$(srcdir)/'`init.c
+
+sscep-init.obj: init.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-init.obj -MD -MP -MF $(DEPDIR)/sscep-init.Tpo -c -o sscep-init.obj `if test -f 'init.c'; then $(CYGPATH_W) 'init.c'; else $(CYGPATH_W) '$(srcdir)/init.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-init.Tpo $(DEPDIR)/sscep-init.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='init.c' object='sscep-init.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-init.obj `if test -f 'init.c'; then $(CYGPATH_W) 'init.c'; else $(CYGPATH_W) '$(srcdir)/init.c'; fi`
+
+sscep-net.o: net.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-net.o -MD -MP -MF $(DEPDIR)/sscep-net.Tpo -c -o sscep-net.o `test -f 'net.c' || echo '$(srcdir)/'`net.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-net.Tpo $(DEPDIR)/sscep-net.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='net.c' object='sscep-net.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-net.o `test -f 'net.c' || echo '$(srcdir)/'`net.c
+
+sscep-net.obj: net.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-net.obj -MD -MP -MF $(DEPDIR)/sscep-net.Tpo -c -o sscep-net.obj `if test -f 'net.c'; then $(CYGPATH_W) 'net.c'; else $(CYGPATH_W) '$(srcdir)/net.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-net.Tpo $(DEPDIR)/sscep-net.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='net.c' object='sscep-net.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-net.obj `if test -f 'net.c'; then $(CYGPATH_W) 'net.c'; else $(CYGPATH_W) '$(srcdir)/net.c'; fi`
+
+sscep-sceputils.o: sceputils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-sceputils.o -MD -MP -MF $(DEPDIR)/sscep-sceputils.Tpo -c -o sscep-sceputils.o `test -f 'sceputils.c' || echo '$(srcdir)/'`sceputils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-sceputils.Tpo $(DEPDIR)/sscep-sceputils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sceputils.c' object='sscep-sceputils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-sceputils.o `test -f 'sceputils.c' || echo '$(srcdir)/'`sceputils.c
+
+sscep-sceputils.obj: sceputils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-sceputils.obj -MD -MP -MF $(DEPDIR)/sscep-sceputils.Tpo -c -o sscep-sceputils.obj `if test -f 'sceputils.c'; then $(CYGPATH_W) 'sceputils.c'; else $(CYGPATH_W) '$(srcdir)/sceputils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-sceputils.Tpo $(DEPDIR)/sscep-sceputils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sceputils.c' object='sscep-sceputils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-sceputils.obj `if test -f 'sceputils.c'; then $(CYGPATH_W) 'sceputils.c'; else $(CYGPATH_W) '$(srcdir)/sceputils.c'; fi`
+
+sscep-pkcs7.o: pkcs7.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-pkcs7.o -MD -MP -MF $(DEPDIR)/sscep-pkcs7.Tpo -c -o sscep-pkcs7.o `test -f 'pkcs7.c' || echo '$(srcdir)/'`pkcs7.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-pkcs7.Tpo $(DEPDIR)/sscep-pkcs7.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='pkcs7.c' object='sscep-pkcs7.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-pkcs7.o `test -f 'pkcs7.c' || echo '$(srcdir)/'`pkcs7.c
+
+sscep-pkcs7.obj: pkcs7.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-pkcs7.obj -MD -MP -MF $(DEPDIR)/sscep-pkcs7.Tpo -c -o sscep-pkcs7.obj `if test -f 'pkcs7.c'; then $(CYGPATH_W) 'pkcs7.c'; else $(CYGPATH_W) '$(srcdir)/pkcs7.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-pkcs7.Tpo $(DEPDIR)/sscep-pkcs7.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='pkcs7.c' object='sscep-pkcs7.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-pkcs7.obj `if test -f 'pkcs7.c'; then $(CYGPATH_W) 'pkcs7.c'; else $(CYGPATH_W) '$(srcdir)/pkcs7.c'; fi`
+
+sscep-ias.o: ias.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-ias.o -MD -MP -MF $(DEPDIR)/sscep-ias.Tpo -c -o sscep-ias.o `test -f 'ias.c' || echo '$(srcdir)/'`ias.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-ias.Tpo $(DEPDIR)/sscep-ias.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ias.c' object='sscep-ias.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-ias.o `test -f 'ias.c' || echo '$(srcdir)/'`ias.c
+
+sscep-ias.obj: ias.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-ias.obj -MD -MP -MF $(DEPDIR)/sscep-ias.Tpo -c -o sscep-ias.obj `if test -f 'ias.c'; then $(CYGPATH_W) 'ias.c'; else $(CYGPATH_W) '$(srcdir)/ias.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-ias.Tpo $(DEPDIR)/sscep-ias.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ias.c' object='sscep-ias.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-ias.obj `if test -f 'ias.c'; then $(CYGPATH_W) 'ias.c'; else $(CYGPATH_W) '$(srcdir)/ias.c'; fi`
+
+sscep-fileutils.o: fileutils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-fileutils.o -MD -MP -MF $(DEPDIR)/sscep-fileutils.Tpo -c -o sscep-fileutils.o `test -f 'fileutils.c' || echo '$(srcdir)/'`fileutils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-fileutils.Tpo $(DEPDIR)/sscep-fileutils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fileutils.c' object='sscep-fileutils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-fileutils.o `test -f 'fileutils.c' || echo '$(srcdir)/'`fileutils.c
+
+sscep-fileutils.obj: fileutils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-fileutils.obj -MD -MP -MF $(DEPDIR)/sscep-fileutils.Tpo -c -o sscep-fileutils.obj `if test -f 'fileutils.c'; then $(CYGPATH_W) 'fileutils.c'; else $(CYGPATH_W) '$(srcdir)/fileutils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-fileutils.Tpo $(DEPDIR)/sscep-fileutils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fileutils.c' object='sscep-fileutils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-fileutils.obj `if test -f 'fileutils.c'; then $(CYGPATH_W) 'fileutils.c'; else $(CYGPATH_W) '$(srcdir)/fileutils.c'; fi`
+
+sscep-configuration.o: configuration.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-configuration.o -MD -MP -MF $(DEPDIR)/sscep-configuration.Tpo -c -o sscep-configuration.o `test -f 'configuration.c' || echo '$(srcdir)/'`configuration.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-configuration.Tpo $(DEPDIR)/sscep-configuration.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='configuration.c' object='sscep-configuration.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-configuration.o `test -f 'configuration.c' || echo '$(srcdir)/'`configuration.c
+
+sscep-configuration.obj: configuration.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-configuration.obj -MD -MP -MF $(DEPDIR)/sscep-configuration.Tpo -c -o sscep-configuration.obj `if test -f 'configuration.c'; then $(CYGPATH_W) 'configuration.c'; else $(CYGPATH_W) '$(srcdir)/configuration.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-configuration.Tpo $(DEPDIR)/sscep-configuration.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='configuration.c' object='sscep-configuration.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-configuration.obj `if test -f 'configuration.c'; then $(CYGPATH_W) 'configuration.c'; else $(CYGPATH_W) '$(srcdir)/configuration.c'; fi`
+
+sscep-engine.o: engine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-engine.o -MD -MP -MF $(DEPDIR)/sscep-engine.Tpo -c -o sscep-engine.o `test -f 'engine.c' || echo '$(srcdir)/'`engine.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-engine.Tpo $(DEPDIR)/sscep-engine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='engine.c' object='sscep-engine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-engine.o `test -f 'engine.c' || echo '$(srcdir)/'`engine.c
+
+sscep-engine.obj: engine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-engine.obj -MD -MP -MF $(DEPDIR)/sscep-engine.Tpo -c -o sscep-engine.obj `if test -f 'engine.c'; then $(CYGPATH_W) 'engine.c'; else $(CYGPATH_W) '$(srcdir)/engine.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-engine.Tpo $(DEPDIR)/sscep-engine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='engine.c' object='sscep-engine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-engine.obj `if test -f 'engine.c'; then $(CYGPATH_W) 'engine.c'; else $(CYGPATH_W) '$(srcdir)/engine.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique

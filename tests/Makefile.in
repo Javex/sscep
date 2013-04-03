@@ -64,10 +64,12 @@ CONFIG_CLEAN_VPATH_FILES =
 am_test_configuration_OBJECTS =  \
 	test_configuration-test_configuration.$(OBJEXT)
 test_configuration_OBJECTS = $(am_test_configuration_OBJECTS)
-test_configuration_DEPENDENCIES = $(top_builddir)/src/configuration.o \
-	$(top_builddir)/src/sceputils.o $(top_builddir)/src/ias.o
+test_configuration_DEPENDENCIES =  \
+	$(top_builddir)/src/sscep-configuration.o \
+	$(top_builddir)/src/sscep-sceputils.o \
+	$(top_builddir)/src/sscep-ias.o
 test_configuration_LINK = $(CCLD) $(test_configuration_CFLAGS) \
-	$(CFLAGS) $(test_configuration_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -430,9 +432,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 test_configuration_SOURCES = test_configuration.c $(top_builddir)/src/configuration.h
-test_configuration_CFLAGS = @CHECK_CFLAGS@ $(COVERAGE_CFLAGS)
-test_configuration_LDADD = $(top_builddir)/src/configuration.o $(top_builddir)/src/sceputils.o $(top_builddir)/src/ias.o -lcrypto @CHECK_LIBS@
-test_configuration_LDFLAGS = $(COVERAGE_LDFLAGS)
+test_configuration_CFLAGS = @CHECK_CFLAGS@
+test_configuration_LDADD = $(top_builddir)/src/sscep-configuration.o $(top_builddir)/src/sscep-sceputils.o $(top_builddir)/src/sscep-ias.o -lcrypto @CHECK_LIBS@ -lgcov
 all: all-am
 
 .SUFFIXES:
