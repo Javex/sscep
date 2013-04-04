@@ -91,15 +91,19 @@ START_TEST(test_scep_conf_load)
 	ck_assert(v_flag);
 	ck_assert(d_flag);
 
+
 	// [sscep_engine] section
+	// (it doesn't matter if this isn't windows, we just need a test string)
 	ck_assert_str_eq(scep_conf->engine->engine_id, "capi");
 	ck_assert_str_eq(scep_conf->engine->dynamic_path, "..\\capi\\capi.dll");
 	ck_assert(g_flag && strcmp(g_char, "capi") == 0);
 
+#ifdef WIN32
 	// [sscep_engine_capi] section
 	ck_assert(strcmp(scep_conf->engine->new_key_location, "REQUEST") == 0);
 	ck_assert(scep_conf->engine->storelocation == LOCAL_MACHINE);
 	ck_assert(scep_conf->engine->module_path == NULL);
+#endif
 }
 END_TEST
 
@@ -165,6 +169,7 @@ START_TEST(test_scep_conf_load_missing_engine_id)
 }
 END_TEST
 
+#ifdef WIN32
 START_TEST(test_scep_conf_load_capi_defaults)
 {
 	CONF *local_conf;
@@ -196,6 +201,7 @@ START_TEST(test_scep_conf_load_capi_defaults)
 	NCONF_free(local_conf);
 }
 END_TEST
+#endif
 
 START_TEST(test_scep_conf_load_jksengine)
 {
@@ -335,7 +341,9 @@ Suite * scep_conf_suite(void)
 	tcase_add_test(tc_load, test_scep_conf_load_no_engine_section);
 	tcase_add_exit_test(tc_load, test_scep_conf_load_missing_engine_section, SCEP_PKISTATUS_FILE);
 	tcase_add_exit_test(tc_load, test_scep_conf_load_missing_engine_id, SCEP_PKISTATUS_FILE);
+#ifdef WIN32
 	tcase_add_test(tc_load, test_scep_conf_load_capi_defaults);
+#endif
 	tcase_add_test(tc_load, test_scep_conf_load_jksengine);
 	tcase_add_test(tc_load, test_scep_conf_load_pkcs11);
 

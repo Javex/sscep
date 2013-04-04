@@ -42,8 +42,10 @@
  */
 #define SCEP_CONFIGURATION_PARAM_ENGINE					"engine"
 #define SCEP_CONFIGURATION_ENGINE_ID					"engine_id"
+#ifdef WIN32
 #define SCEP_CONFIGURATION_ENGINE_CAPI_STORELOCATION	"storelocation"
 #define SCEP_CONFIGURATION_ENGINE_CAPI_NEWKEYLOCATION	"new_key_location"
+#endif
 #define SCEP_CONFIGURATION_ENGINE_JKSENGINE_KEYSTOREPASS "KeyStorePass"
 #define SCEP_CONFIGURATION_ENGINE_JKSENGINE_PROVIDER	"KeyStoreProvider"
 #define SCEP_CONFIGURATION_ENGINE_JKSENGINE_JCONNPATH	"JavaConnectorPath"
@@ -101,8 +103,10 @@ typedef enum  {
 
 struct scep_engine_conf_st{
 	char *engine_id; // ID of the engine according to OpenSSL (e.g. pkcs11, capi, chil, ...)
+#ifdef WIN32
 	char *new_key_location; // CryptoAPI only option: Which storename to set for the new key, default: REQUEST
 	capi_storelocation_t storelocation; // CryptoAPI only option: Which storelocation to use, default: OpenSSL engine default
+#endif
 	char *dynamic_path; // where the shared object (.so, .dll) can be found
 	char *jconnpath; //the JavaConnectorPath variable which needs to be set to use the Java part of JKSEngine
 	char *storepass; // Passphrase for the JKS keystore (JKSEngine)

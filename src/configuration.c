@@ -157,6 +157,7 @@ int scep_conf_load(CONF *conf) {
 		engine_special_section = (char *) malloc(sizeof(SCEP_CONFIGURATION_SECTION_ENGINE_TEMPLATE) + sizeof(scep_conf->engine->engine_id));
 		sprintf(engine_special_section, SCEP_CONFIGURATION_SECTION_ENGINE_TEMPLATE, scep_conf->engine->engine_id);
 
+#ifdef WIN32
 		//load capi only option
 		//TODO move
 		if(strncmp(scep_conf->engine->engine_id, "capi", 4) == 0) {
@@ -189,6 +190,7 @@ int scep_conf_load(CONF *conf) {
 
 			
 		}
+#endif
 
 		//load JKSEngine only option
 		//TODO move
@@ -236,7 +238,7 @@ int scep_conf_load(CONF *conf) {
 			scep_conf->engine->dynamic_path = var;
 		} else {
 			if(v_flag)
-				printf("%s: Not setting a dynamic path. Not dynamic loading supported for engine %s\n", pname, scep_conf->engine->engine_id);
+				printf("%s: Not setting a dynamic path. No dynamic loading supported for engine %s\n", pname, scep_conf->engine->engine_id);
 #ifdef WIN32
 			//fallback does not work yet!
 			//TODO: find out why it did not find the C:\Windows\System32\capi.dll
