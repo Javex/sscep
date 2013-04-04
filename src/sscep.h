@@ -18,7 +18,6 @@
 #include <signal.h>
 #include <setjmp.h>
 #include "getopt.h"
-#include "fileutils_capi.h"
 #include "configuration.h"
 #include "engine.h"
 
