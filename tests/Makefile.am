@@ -1,6 +1,6 @@
-TESTS = test_configuration test_ias test_sceputils test_fileutils
+TESTS = test_configuration test_ias test_sceputils test_fileutils test_pkcs7 test_net test_engine
 
-check_PROGRAMS = test_configuration test_ias test_sceputils test_fileutils
+check_PROGRAMS = test_configuration test_ias test_sceputils test_fileutils test_pkcs7 test_net test_engine
 check_LDADD = -lcrypto @CHECK_LIBS@ -lgcov
 test_configuration_SOURCES = test_configuration.c $(top_builddir)/src/configuration.h
 test_configuration_CFLAGS = @CHECK_CFLAGS@
@@ -17,3 +17,16 @@ test_sceputils_LDADD = $(top_builddir)/src/sscep-sceputils.o $(top_builddir)/src
 test_fileutils_SOURCES = test_fileutils.c $(top_builddir)/src/sscep.h
 test_fileutils_CFLAGS = @CHECK_CFLAGS@
 test_fileutils_LDADD = $(top_builddir)/src/sscep-fileutils.o $(check_LDADD)
+
+test_pkcs7_SOURCES = test_pkcs7.c $(top_builddir)/src/sscep.h
+test_pkcs7_CFLAGS = @CHECK_CFLAGS@
+test_pkcs7_LDADD = $(top_builddir)/src/sscep-pkcs7.o $(top_builddir)/src/sscep-ias.o $(check_LDADD)
+
+test_net_SOURCES = test_net.c $(top_builddir)/src/sscep.h
+test_net_CFLAGS = @CHECK_CFLAGS@
+test_net_LDADD = $(top_builddir)/src/sscep-net.o $(check_LDADD)
+
+test_engine_SOURCES = test_engine.c $(top_builddir)/src/engine.h
+test_engine_CFLAGS = @CHECK_CFLAGS@
+test_engine_LDADD = $(top_builddir)/src/sscep-engine.o $(top_builddir)/src/sscep-fileutils.o $(check_LDADD)
+

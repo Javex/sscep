@@ -48,9 +48,11 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 TESTS = test_configuration$(EXEEXT) test_ias$(EXEEXT) \
-	test_sceputils$(EXEEXT) test_fileutils$(EXEEXT)
+	test_sceputils$(EXEEXT) test_fileutils$(EXEEXT) \
+	test_pkcs7$(EXEEXT) test_net$(EXEEXT) test_engine$(EXEEXT)
 check_PROGRAMS = test_configuration$(EXEEXT) test_ias$(EXEEXT) \
-	test_sceputils$(EXEEXT) test_fileutils$(EXEEXT)
+	test_sceputils$(EXEEXT) test_fileutils$(EXEEXT) \
+	test_pkcs7$(EXEEXT) test_net$(EXEEXT) test_engine$(EXEEXT)
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/build-aux/depcomp \
@@ -73,6 +75,12 @@ test_configuration_DEPENDENCIES =  \
 	$(top_builddir)/src/sscep-ias.o $(am__DEPENDENCIES_1)
 test_configuration_LINK = $(CCLD) $(test_configuration_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+am_test_engine_OBJECTS = test_engine-test_engine.$(OBJEXT)
+test_engine_OBJECTS = $(am_test_engine_OBJECTS)
+test_engine_DEPENDENCIES = $(top_builddir)/src/sscep-engine.o \
+	$(top_builddir)/src/sscep-fileutils.o $(am__DEPENDENCIES_1)
+test_engine_LINK = $(CCLD) $(test_engine_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_test_fileutils_OBJECTS = test_fileutils-test_fileutils.$(OBJEXT)
 test_fileutils_OBJECTS = $(am_test_fileutils_OBJECTS)
 test_fileutils_DEPENDENCIES = $(top_builddir)/src/sscep-fileutils.o \
@@ -84,6 +92,18 @@ test_ias_OBJECTS = $(am_test_ias_OBJECTS)
 test_ias_DEPENDENCIES = $(top_builddir)/src/sscep-ias.o \
 	$(am__DEPENDENCIES_1)
 test_ias_LINK = $(CCLD) $(test_ias_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_test_net_OBJECTS = test_net-test_net.$(OBJEXT)
+test_net_OBJECTS = $(am_test_net_OBJECTS)
+test_net_DEPENDENCIES = $(top_builddir)/src/sscep-net.o \
+	$(am__DEPENDENCIES_1)
+test_net_LINK = $(CCLD) $(test_net_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_test_pkcs7_OBJECTS = test_pkcs7-test_pkcs7.$(OBJEXT)
+test_pkcs7_OBJECTS = $(am_test_pkcs7_OBJECTS)
+test_pkcs7_DEPENDENCIES = $(top_builddir)/src/sscep-pkcs7.o \
+	$(top_builddir)/src/sscep-ias.o $(am__DEPENDENCIES_1)
+test_pkcs7_LINK = $(CCLD) $(test_pkcs7_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am_test_sceputils_OBJECTS = test_sceputils-test_sceputils.$(OBJEXT)
 test_sceputils_OBJECTS = $(am_test_sceputils_OBJECTS)
@@ -124,10 +144,14 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(test_configuration_SOURCES) $(test_fileutils_SOURCES) \
-	$(test_ias_SOURCES) $(test_sceputils_SOURCES)
-DIST_SOURCES = $(test_configuration_SOURCES) $(test_fileutils_SOURCES) \
-	$(test_ias_SOURCES) $(test_sceputils_SOURCES)
+SOURCES = $(test_configuration_SOURCES) $(test_engine_SOURCES) \
+	$(test_fileutils_SOURCES) $(test_ias_SOURCES) \
+	$(test_net_SOURCES) $(test_pkcs7_SOURCES) \
+	$(test_sceputils_SOURCES)
+DIST_SOURCES = $(test_configuration_SOURCES) $(test_engine_SOURCES) \
+	$(test_fileutils_SOURCES) $(test_ias_SOURCES) \
+	$(test_net_SOURCES) $(test_pkcs7_SOURCES) \
+	$(test_sceputils_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -468,6 +492,15 @@ test_sceputils_LDADD = $(top_builddir)/src/sscep-sceputils.o $(top_builddir)/src
 test_fileutils_SOURCES = test_fileutils.c $(top_builddir)/src/sscep.h
 test_fileutils_CFLAGS = @CHECK_CFLAGS@
 test_fileutils_LDADD = $(top_builddir)/src/sscep-fileutils.o $(check_LDADD)
+test_pkcs7_SOURCES = test_pkcs7.c $(top_builddir)/src/sscep.h
+test_pkcs7_CFLAGS = @CHECK_CFLAGS@
+test_pkcs7_LDADD = $(top_builddir)/src/sscep-pkcs7.o $(top_builddir)/src/sscep-ias.o $(check_LDADD)
+test_net_SOURCES = test_net.c $(top_builddir)/src/sscep.h
+test_net_CFLAGS = @CHECK_CFLAGS@
+test_net_LDADD = $(top_builddir)/src/sscep-net.o $(check_LDADD)
+test_engine_SOURCES = test_engine.c $(top_builddir)/src/engine.h
+test_engine_CFLAGS = @CHECK_CFLAGS@
+test_engine_LDADD = $(top_builddir)/src/sscep-engine.o $(top_builddir)/src/sscep-fileutils.o $(check_LDADD)
 all: all-am
 
 .SUFFIXES:
@@ -508,12 +541,21 @@ clean-checkPROGRAMS:
 test_configuration$(EXEEXT): $(test_configuration_OBJECTS) $(test_configuration_DEPENDENCIES) $(EXTRA_test_configuration_DEPENDENCIES) 
 	@rm -f test_configuration$(EXEEXT)
 	$(AM_V_CCLD)$(test_configuration_LINK) $(test_configuration_OBJECTS) $(test_configuration_LDADD) $(LIBS)
+test_engine$(EXEEXT): $(test_engine_OBJECTS) $(test_engine_DEPENDENCIES) $(EXTRA_test_engine_DEPENDENCIES) 
+	@rm -f test_engine$(EXEEXT)
+	$(AM_V_CCLD)$(test_engine_LINK) $(test_engine_OBJECTS) $(test_engine_LDADD) $(LIBS)
 test_fileutils$(EXEEXT): $(test_fileutils_OBJECTS) $(test_fileutils_DEPENDENCIES) $(EXTRA_test_fileutils_DEPENDENCIES) 
 	@rm -f test_fileutils$(EXEEXT)
 	$(AM_V_CCLD)$(test_fileutils_LINK) $(test_fileutils_OBJECTS) $(test_fileutils_LDADD) $(LIBS)
 test_ias$(EXEEXT): $(test_ias_OBJECTS) $(test_ias_DEPENDENCIES) $(EXTRA_test_ias_DEPENDENCIES) 
 	@rm -f test_ias$(EXEEXT)
 	$(AM_V_CCLD)$(test_ias_LINK) $(test_ias_OBJECTS) $(test_ias_LDADD) $(LIBS)
+test_net$(EXEEXT): $(test_net_OBJECTS) $(test_net_DEPENDENCIES) $(EXTRA_test_net_DEPENDENCIES) 
+	@rm -f test_net$(EXEEXT)
+	$(AM_V_CCLD)$(test_net_LINK) $(test_net_OBJECTS) $(test_net_LDADD) $(LIBS)
+test_pkcs7$(EXEEXT): $(test_pkcs7_OBJECTS) $(test_pkcs7_DEPENDENCIES) $(EXTRA_test_pkcs7_DEPENDENCIES) 
+	@rm -f test_pkcs7$(EXEEXT)
+	$(AM_V_CCLD)$(test_pkcs7_LINK) $(test_pkcs7_OBJECTS) $(test_pkcs7_LDADD) $(LIBS)
 test_sceputils$(EXEEXT): $(test_sceputils_OBJECTS) $(test_sceputils_DEPENDENCIES) $(EXTRA_test_sceputils_DEPENDENCIES) 
 	@rm -f test_sceputils$(EXEEXT)
 	$(AM_V_CCLD)$(test_sceputils_LINK) $(test_sceputils_OBJECTS) $(test_sceputils_LDADD) $(LIBS)
@@ -525,8 +567,11 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_configuration-test_configuration.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_engine-test_engine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_fileutils-test_fileutils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ias-test_ias.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_net-test_net.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_pkcs7-test_pkcs7.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_sceputils-test_sceputils.Po@am__quote@
 
 .c.o:
@@ -557,6 +602,20 @@ test_configuration-test_configuration.obj: test_configuration.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_configuration_CFLAGS) $(CFLAGS) -c -o test_configuration-test_configuration.obj `if test -f 'test_configuration.c'; then $(CYGPATH_W) 'test_configuration.c'; else $(CYGPATH_W) '$(srcdir)/test_configuration.c'; fi`
 
+test_engine-test_engine.o: test_engine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_engine_CFLAGS) $(CFLAGS) -MT test_engine-test_engine.o -MD -MP -MF $(DEPDIR)/test_engine-test_engine.Tpo -c -o test_engine-test_engine.o `test -f 'test_engine.c' || echo '$(srcdir)/'`test_engine.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_engine-test_engine.Tpo $(DEPDIR)/test_engine-test_engine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_engine.c' object='test_engine-test_engine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_engine_CFLAGS) $(CFLAGS) -c -o test_engine-test_engine.o `test -f 'test_engine.c' || echo '$(srcdir)/'`test_engine.c
+
+test_engine-test_engine.obj: test_engine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_engine_CFLAGS) $(CFLAGS) -MT test_engine-test_engine.obj -MD -MP -MF $(DEPDIR)/test_engine-test_engine.Tpo -c -o test_engine-test_engine.obj `if test -f 'test_engine.c'; then $(CYGPATH_W) 'test_engine.c'; else $(CYGPATH_W) '$(srcdir)/test_engine.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_engine-test_engine.Tpo $(DEPDIR)/test_engine-test_engine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_engine.c' object='test_engine-test_engine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_engine_CFLAGS) $(CFLAGS) -c -o test_engine-test_engine.obj `if test -f 'test_engine.c'; then $(CYGPATH_W) 'test_engine.c'; else $(CYGPATH_W) '$(srcdir)/test_engine.c'; fi`
+
 test_fileutils-test_fileutils.o: test_fileutils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_fileutils_CFLAGS) $(CFLAGS) -MT test_fileutils-test_fileutils.o -MD -MP -MF $(DEPDIR)/test_fileutils-test_fileutils.Tpo -c -o test_fileutils-test_fileutils.o `test -f 'test_fileutils.c' || echo '$(srcdir)/'`test_fileutils.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_fileutils-test_fileutils.Tpo $(DEPDIR)/test_fileutils-test_fileutils.Po
@@ -584,6 +643,34 @@ test_ias-test_ias.obj: test_ias.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_ias.c' object='test_ias-test_ias.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_ias_CFLAGS) $(CFLAGS) -c -o test_ias-test_ias.obj `if test -f 'test_ias.c'; then $(CYGPATH_W) 'test_ias.c'; else $(CYGPATH_W) '$(srcdir)/test_ias.c'; fi`
+
+test_net-test_net.o: test_net.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_net_CFLAGS) $(CFLAGS) -MT test_net-test_net.o -MD -MP -MF $(DEPDIR)/test_net-test_net.Tpo -c -o test_net-test_net.o `test -f 'test_net.c' || echo '$(srcdir)/'`test_net.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_net-test_net.Tpo $(DEPDIR)/test_net-test_net.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_net.c' object='test_net-test_net.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_net_CFLAGS) $(CFLAGS) -c -o test_net-test_net.o `test -f 'test_net.c' || echo '$(srcdir)/'`test_net.c
+
+test_net-test_net.obj: test_net.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_net_CFLAGS) $(CFLAGS) -MT test_net-test_net.obj -MD -MP -MF $(DEPDIR)/test_net-test_net.Tpo -c -o test_net-test_net.obj `if test -f 'test_net.c'; then $(CYGPATH_W) 'test_net.c'; else $(CYGPATH_W) '$(srcdir)/test_net.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_net-test_net.Tpo $(DEPDIR)/test_net-test_net.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_net.c' object='test_net-test_net.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_net_CFLAGS) $(CFLAGS) -c -o test_net-test_net.obj `if test -f 'test_net.c'; then $(CYGPATH_W) 'test_net.c'; else $(CYGPATH_W) '$(srcdir)/test_net.c'; fi`
+
+test_pkcs7-test_pkcs7.o: test_pkcs7.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_pkcs7_CFLAGS) $(CFLAGS) -MT test_pkcs7-test_pkcs7.o -MD -MP -MF $(DEPDIR)/test_pkcs7-test_pkcs7.Tpo -c -o test_pkcs7-test_pkcs7.o `test -f 'test_pkcs7.c' || echo '$(srcdir)/'`test_pkcs7.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_pkcs7-test_pkcs7.Tpo $(DEPDIR)/test_pkcs7-test_pkcs7.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_pkcs7.c' object='test_pkcs7-test_pkcs7.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_pkcs7_CFLAGS) $(CFLAGS) -c -o test_pkcs7-test_pkcs7.o `test -f 'test_pkcs7.c' || echo '$(srcdir)/'`test_pkcs7.c
+
+test_pkcs7-test_pkcs7.obj: test_pkcs7.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_pkcs7_CFLAGS) $(CFLAGS) -MT test_pkcs7-test_pkcs7.obj -MD -MP -MF $(DEPDIR)/test_pkcs7-test_pkcs7.Tpo -c -o test_pkcs7-test_pkcs7.obj `if test -f 'test_pkcs7.c'; then $(CYGPATH_W) 'test_pkcs7.c'; else $(CYGPATH_W) '$(srcdir)/test_pkcs7.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_pkcs7-test_pkcs7.Tpo $(DEPDIR)/test_pkcs7-test_pkcs7.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_pkcs7.c' object='test_pkcs7-test_pkcs7.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_pkcs7_CFLAGS) $(CFLAGS) -c -o test_pkcs7-test_pkcs7.obj `if test -f 'test_pkcs7.c'; then $(CYGPATH_W) 'test_pkcs7.c'; else $(CYGPATH_W) '$(srcdir)/test_pkcs7.c'; fi`
 
 test_sceputils-test_sceputils.o: test_sceputils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_sceputils_CFLAGS) $(CFLAGS) -MT test_sceputils-test_sceputils.o -MD -MP -MF $(DEPDIR)/test_sceputils-test_sceputils.Tpo -c -o test_sceputils-test_sceputils.o `test -f 'test_sceputils.c' || echo '$(srcdir)/'`test_sceputils.c
@@ -816,6 +903,27 @@ test_sceputils.log: test_sceputils$(EXEEXT)
 test_fileutils.log: test_fileutils$(EXEEXT)
 	@p='test_fileutils$(EXEEXT)'; \
 	b='test_fileutils'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_pkcs7.log: test_pkcs7$(EXEEXT)
+	@p='test_pkcs7$(EXEEXT)'; \
+	b='test_pkcs7'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_net.log: test_net$(EXEEXT)
+	@p='test_net$(EXEEXT)'; \
+	b='test_net'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_engine.log: test_engine$(EXEEXT)
+	@p='test_engine$(EXEEXT)'; \
+	b='test_engine'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
