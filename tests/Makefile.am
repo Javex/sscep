@@ -16,4 +16,4 @@ test_sceputils_LDADD = $(top_builddir)/src/sscep-sceputils.o $(top_builddir)/src
 
 test_fileutils_SOURCES = test_fileutils.c $(top_builddir)/src/sscep.h
 test_fileutils_CFLAGS = @CHECK_CFLAGS@
-test_fileutils_LDADD = $(top_builddir)/src/sscep-fileutils.o
+test_fileutils_LDADD = $(top_builddir)/src/sscep-fileutils.o $(check_LDADD)

@@ -75,7 +75,8 @@ test_configuration_LINK = $(CCLD) $(test_configuration_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_test_fileutils_OBJECTS = test_fileutils-test_fileutils.$(OBJEXT)
 test_fileutils_OBJECTS = $(am_test_fileutils_OBJECTS)
-test_fileutils_DEPENDENCIES = $(top_builddir)/src/sscep-fileutils.o
+test_fileutils_DEPENDENCIES = $(top_builddir)/src/sscep-fileutils.o \
+	$(am__DEPENDENCIES_1)
 test_fileutils_LINK = $(CCLD) $(test_fileutils_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_test_ias_OBJECTS = test_ias-test_ias.$(OBJEXT)
@@ -466,7 +467,7 @@ test_sceputils_CFLAGS = @CHECK_CFLAGS@
 test_sceputils_LDADD = $(top_builddir)/src/sscep-sceputils.o $(top_builddir)/src/sscep-ias.o $(top_builddir)/src/sscep-fileutils.o $(check_LDADD)
 test_fileutils_SOURCES = test_fileutils.c $(top_builddir)/src/sscep.h
 test_fileutils_CFLAGS = @CHECK_CFLAGS@
-test_fileutils_LDADD = $(top_builddir)/src/sscep-fileutils.o
+test_fileutils_LDADD = $(top_builddir)/src/sscep-fileutils.o $(check_LDADD)
 all: all-am
 
 .SUFFIXES:
