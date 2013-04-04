@@ -78,7 +78,10 @@ test_configuration_LINK = $(CCLD) $(test_configuration_CFLAGS) \
 am_test_engine_OBJECTS = test_engine-test_engine.$(OBJEXT)
 test_engine_OBJECTS = $(am_test_engine_OBJECTS)
 test_engine_DEPENDENCIES = $(top_builddir)/src/sscep-engine.o \
-	$(top_builddir)/src/sscep-fileutils.o $(am__DEPENDENCIES_1)
+	$(top_builddir)/src/sscep-fileutils.o \
+	$(top_builddir)/src/sscep-configuration.o \
+	$(top_builddir)/src/sscep-ias.o \
+	$(top_builddir)/src/sscep-sceputils.o $(am__DEPENDENCIES_1)
 test_engine_LINK = $(CCLD) $(test_engine_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_test_fileutils_OBJECTS = test_fileutils-test_fileutils.$(OBJEXT)
@@ -500,7 +503,7 @@ test_net_CFLAGS = @CHECK_CFLAGS@
 test_net_LDADD = $(top_builddir)/src/sscep-net.o $(check_LDADD)
 test_engine_SOURCES = test_engine.c $(top_builddir)/src/engine.h
 test_engine_CFLAGS = @CHECK_CFLAGS@
-test_engine_LDADD = $(top_builddir)/src/sscep-engine.o $(top_builddir)/src/sscep-fileutils.o $(check_LDADD)
+test_engine_LDADD = $(top_builddir)/src/sscep-engine.o $(top_builddir)/src/sscep-fileutils.o $(top_builddir)/src/sscep-configuration.o $(top_builddir)/src/sscep-ias.o $(top_builddir)/src/sscep-sceputils.o $(check_LDADD)
 all: all-am
 
 .SUFFIXES:

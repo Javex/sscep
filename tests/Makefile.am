@@ -28,5 +28,5 @@ test_net_LDADD = $(top_builddir)/src/sscep-net.o $(check_LDADD)
 
 test_engine_SOURCES = test_engine.c $(top_builddir)/src/engine.h
 test_engine_CFLAGS = @CHECK_CFLAGS@
-test_engine_LDADD = $(top_builddir)/src/sscep-engine.o $(top_builddir)/src/sscep-fileutils.o $(check_LDADD)
+test_engine_LDADD = $(top_builddir)/src/sscep-engine.o $(top_builddir)/src/sscep-fileutils.o $(top_builddir)/src/sscep-configuration.o $(top_builddir)/src/sscep-ias.o $(top_builddir)/src/sscep-sceputils.o $(check_LDADD)
 
