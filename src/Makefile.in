@@ -62,11 +62,10 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_sscep_OBJECTS = sscep-sscep.$(OBJEXT) sscep-init.$(OBJEXT) \
-	sscep-net.$(OBJEXT) sscep-sceputils.$(OBJEXT) \
-	sscep-pkcs7.$(OBJEXT) sscep-ias.$(OBJEXT) \
-	sscep-fileutils.$(OBJEXT) sscep-configuration.$(OBJEXT) \
-	sscep-engine.$(OBJEXT)
+am_sscep_OBJECTS = sscep-sscep.$(OBJEXT) sscep-net.$(OBJEXT) \
+	sscep-sceputils.$(OBJEXT) sscep-pkcs7.$(OBJEXT) \
+	sscep-ias.$(OBJEXT) sscep-fileutils.$(OBJEXT) \
+	sscep-configuration.$(OBJEXT) sscep-engine.$(OBJEXT)
 sscep_OBJECTS = $(am_sscep_OBJECTS)
 sscep_DEPENDENCIES =
 sscep_LINK = $(CCLD) $(sscep_CFLAGS) $(CFLAGS) $(sscep_LDFLAGS) \
@@ -228,7 +227,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-sscep_SOURCES = sscep.c init.c net.c sceputils.c pkcs7.c ias.c fileutils.c configuration.c engine.c
+sscep_SOURCES = sscep.c net.c sceputils.c pkcs7.c ias.c fileutils.c configuration.c engine.c
 sscep_LDADD = -lcrypto
 sscep_CFLAGS = $(COVERAGE_CFLAGS)
 sscep_LDFLAGS = $(COVERAGE_LDFLAGS)
@@ -322,7 +321,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-engine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-fileutils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-ias.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-init.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-net.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-pkcs7.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sscep-sceputils.Po@am__quote@
@@ -355,20 +353,6 @@ sscep-sscep.obj: sscep.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sscep.c' object='sscep-sscep.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-sscep.obj `if test -f 'sscep.c'; then $(CYGPATH_W) 'sscep.c'; else $(CYGPATH_W) '$(srcdir)/sscep.c'; fi`
-
-sscep-init.o: init.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-init.o -MD -MP -MF $(DEPDIR)/sscep-init.Tpo -c -o sscep-init.o `test -f 'init.c' || echo '$(srcdir)/'`init.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-init.Tpo $(DEPDIR)/sscep-init.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='init.c' object='sscep-init.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-init.o `test -f 'init.c' || echo '$(srcdir)/'`init.c
-
-sscep-init.obj: init.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-init.obj -MD -MP -MF $(DEPDIR)/sscep-init.Tpo -c -o sscep-init.obj `if test -f 'init.c'; then $(CYGPATH_W) 'init.c'; else $(CYGPATH_W) '$(srcdir)/init.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sscep-init.Tpo $(DEPDIR)/sscep-init.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='init.c' object='sscep-init.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -c -o sscep-init.obj `if test -f 'init.c'; then $(CYGPATH_W) 'init.c'; else $(CYGPATH_W) '$(srcdir)/init.c'; fi`
 
 sscep-net.o: net.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sscep_CFLAGS) $(CFLAGS) -MT sscep-net.o -MD -MP -MF $(DEPDIR)/sscep-net.Tpo -c -o sscep-net.o `test -f 'net.c' || echo '$(srcdir)/'`net.c
