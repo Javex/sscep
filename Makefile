@@ -11,7 +11,7 @@ OPENSSL = /c/Users/tob130/Downloads/openssl-mingw
 CFLAGS	= -Wall -O $(WITH_DEBUG) -I $(OPENSSL)/include
 
 LDFLAGS = -L$(OPENSSL)/lib
-LDLIBS = -lcrypto
+LDLIBS = -lcrypto -lcurl
 
 MAN	= sscep.8
 PROG	= sscep

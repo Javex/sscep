@@ -26,6 +26,185 @@ void perror_w32 (const char *message)
 
 #endif
 
+size_t scep_recieve_data(void *buffer, size_t size, size_t nmemb, void *userp)
+{
+	size_t realsize = size * nmemb;
+	struct http_reply *reply = (struct http_reply *)userp;
+
+	reply->payload= realloc(reply->payload, reply->bytes + realsize + 1);
+	if(reply->payload == NULL) {
+		printf("Not enough memory for HTTP data. Aborting\n");
+		return 0;
+	}
+
+	memcpy(&(reply->payload[reply->bytes]), buffer, realsize);
+	reply->bytes += realsize;
+	reply->payload[reply->bytes] = 0;
+	return realsize;
+}
+
+struct http_reply *scep_send_request_getca(char *host_name, int host_port, char *dir_name)
+{
+	int length_of_complete_url;
+	char port_str[6], *http_url, *content_type;
+	snprintf(port_str, 5, "%d", host_port);
+	CURL *curl_handle;
+	struct http_reply *reply;
+
+	curl_handle = curl_easy_init();
+	if(!curl_handle) {
+		fprintf(stderr, "%s: Could not get CURL handle!\n");
+		exit(SCEP_PKISTATUS_NET);
+	}
+
+	length_of_complete_url = strlen(host_name)
+							 + strlen(":")
+							 + strlen(port_str)
+							 + (p_flag ? 0 : 1)
+							 + strlen(dir_name)
+							 + strlen(i_char)
+							 + (M_char ? strlen(M_char) : 0)
+							 + strlen("?operation=GetCACert&message=")
+							 + 1;
+	http_url = malloc(length_of_complete_url * sizeof(char));
+
+	snprintf(http_url, length_of_complete_url, "%s:%s%s%s?operation=GetCACert&message=%s",
+				host_name, port_str, p_flag ? "" : "/", dir_name, i_char);
+
+	if(M_flag) {
+		strncat(http_url, "&", 1);
+		strncat(http_url, M_char, strlen(M_char));
+	}
+
+	printf("%s: requesting CA certificate\n", pname);
+
+	if(d_flag)
+		printf("Sending request to %s\n", http_url);
+
+
+	reply = malloc(sizeof(struct http_reply));
+	reply->payload = NULL;
+	reply->bytes = 0;
+	curl_easy_setopt(curl_handle, CURLOPT_URL, http_url);
+	free(http_url);
+	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, scep_recieve_data);
+	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, reply);
+
+	if(d_flag)
+		curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 1);
+
+	CURLcode res = curl_easy_perform(curl_handle);
+	if(res != CURLE_OK) {
+		printf("Error! %s\n", curl_easy_strerror(res));
+		exit(SCEP_PKISTATUS_NET);
+	}
+
+
+
+	curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &(reply->status));
+	printf("Server responded with status %d\n", reply->status);
+
+	res = curl_easy_getinfo(curl_handle, CURLINFO_CONTENT_TYPE, &content_type);
+	if(res != CURLE_OK) {
+		printf("Error while retrieving Content-Type header:\n%s\n", curl_easy_strerror(res));
+		exit(SCEP_PKISTATUS_NET);
+	}
+	if(!content_type) {
+		printf("Server did not return a Content-Type.\n");
+		exit(SCEP_PKISTATUS_NET);
+	}
+
+	if(strcmp(content_type, MIME_GETCA) == 0)
+		reply->type = SCEP_MIME_GETCA;
+	else if (strcmp(content_type, MIME_GETCA_RA) == 0)
+		reply->type = SCEP_MIME_GETCA_RA;
+	else {
+		fprintf(stderr, "%s: wrong MIME content type: %s\n", pname, content_type);
+		exit(SCEP_PKISTATUS_NET);
+	}
+
+	if (v_flag)
+		printf("%s: MIME header: %s\n", pname, content_type);
+
+	curl_easy_cleanup(curl_handle);
+
+	return reply;
+}
+
+void scep_operation_getca(char *host_name, int host_port, char *dir_name)
+{
+	int c;
+	BIO *bp;
+	unsigned int n;
+	unsigned char md[EVP_MAX_MD_SIZE];
+	FILE *fp;
+	struct http_reply *reply;
+
+	if (v_flag)
+		fprintf(stdout, "%s: SCEP_OPERATION_GETCA\n",
+			pname);
+
+	/* Set CA identifier */
+	if (!i_flag)
+		i_char = CA_IDENTIFIER;
+
+	/* Forge the HTTP message */
+
+	reply = scep_send_request_getca(host_name, host_port, dir_name);
+
+	/*
+	 * Send http message.
+	 * Response is written to http_response struct "reply".
+	 */
+	if (reply->payload == NULL) {
+		fprintf(stderr, "%s: no data, perhaps you "
+		   "should define CA identifier (-i)\n", pname);
+		exit (SCEP_PKISTATUS_SUCCESS);
+	}
+	printf("%s: valid response from server\n", pname);
+	if (reply->type == SCEP_MIME_GETCA_RA) {
+		/* XXXXXXXXXXXXXXXXXXXXX chain not verified */
+		write_ca_ra(&reply);
+	}
+	/* Read payload as DER X.509 object: */
+	bp = BIO_new_mem_buf(reply->payload, reply->bytes);
+	cacert = d2i_X509_bio(bp, NULL);
+
+	/* Read and print certificate information */
+	if (!X509_digest(cacert, fp_alg, md, &n)) {
+		ERR_print_errors_fp(stderr);
+		exit (SCEP_PKISTATUS_ERROR);
+	}
+	printf("%s: %s fingerprint: ", pname,
+		OBJ_nid2sn(EVP_MD_type(fp_alg)));
+	for (c = 0; c < (int)n; c++) {
+		printf("%02X%c",md[c],
+			(c + 1 == (int)n) ?'\n':':');
+	}
+
+	/* Write PEM-formatted file: */
+	#ifdef WIN32
+	if ((fopen_s(&fp, c_char, "w")))
+	#else
+	if (!(fp = fopen(c_char, "w")))
+	#endif
+	{
+		fprintf(stderr, "%s: cannot open CA file for "
+			"writing\n", pname);
+		exit (SCEP_PKISTATUS_ERROR);
+	}
+	if (PEM_write_X509(fp, cacert) != 1) {
+		fprintf(stderr, "%s: error while writing CA "
+			"file\n", pname);
+		ERR_print_errors_fp(stderr);
+		exit (SCEP_PKISTATUS_ERROR);
+	}
+	printf("%s: CA certificate written as %s\n",
+		pname, c_char);
+	(void)fclose(fp);
+	pkistatus = SCEP_PKISTATUS_SUCCESS;
+}
+
 int
 send_msg(struct http_reply *http,char *msg,char *host,int port,int operation) {
 	int			sd, rc, used, bytes;

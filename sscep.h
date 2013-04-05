@@ -12,11 +12,13 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <signal.h>
 #include <setjmp.h>
+#include <curl/curl.h>
 #include "getopt.h"
 #include "fileutils_capi.h"
 #include "configuration.h"
@@ -207,13 +209,13 @@ struct http_reply {
 	int type;
 
 	/* Status */
-	int status;
+	long status;
 
 	/* Payload */
 	char *payload;
 
 	/* Payload size */
-	int bytes;
+	size_t bytes;
 };
 
 /* SCEP transaction structure */
@@ -272,6 +274,9 @@ void usage(void);
 
 /* Send HTTP message */
 int send_msg (struct http_reply *, char *, char *, int, int);
+size_t scep_recieve_data(void *buffer, size_t size, size_t nmemb, void *userp);
+struct http_reply *scep_send_request_getca(char *host_name, int host_port, char *dir_name);
+void scep_operation_getca(char *host_name, int host_port, char *dir_name);
 
 /* Catch SIGALRM */
 void catchalarm (int);

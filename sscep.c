@@ -116,6 +116,7 @@ main(int argc, char **argv) {
 #endif
 	/* Initialize scep layer */
 	init_scep();
+	curl_global_init(CURL_GLOBAL_ALL);
 
 	/* Set program name */
 	pname = argv[0];
@@ -498,93 +499,7 @@ main(int argc, char **argv) {
 	 */
 	switch(operation_flag) {
 		case SCEP_OPERATION_GETCA:
-			if (v_flag)
-				fprintf(stdout, "%s: SCEP_OPERATION_GETCA\n",
-					pname);
-
-			/* Set CA identifier */
-			if (!i_flag)
-				i_char = CA_IDENTIFIER;
-
-			/* Forge the HTTP message */
-
-			if(!M_flag){
-				snprintf(http_string, sizeof(http_string),
-				 "GET %s%s?operation=GetCACert&message=%s "
-				 "HTTP/1.0\r\n\r\n", p_flag ? "" : "/", dir_name,
-						i_char);
-
-			}else{
-				snprintf(http_string, sizeof(http_string),
-					"GET %s%s?operation=GetCACert&message=%s&%s "
-					"HTTP/1.0\r\n\r\n", p_flag ? "" : "/", dir_name,
-						i_char, M_char);
-
-			}
-
-
-			printf("%s: requesting CA certificate\n", pname);
-			if (d_flag)
-				fprintf(stdout, "%s: scep msg: %s", pname,
-					http_string);
-			/*
-			 * Send http message.
-			 * Response is written to http_response struct "reply".
-			 */
-			reply.payload = NULL;
-			if ((c = send_msg (&reply, http_string, host_name,
-					host_port, operation_flag)) == 1) {
-				fprintf(stderr, "%s: error while sending "
-					"message\n", pname);
-				exit (SCEP_PKISTATUS_NET);
-			}
-			if (reply.payload == NULL) {
-				fprintf(stderr, "%s: no data, perhaps you "
-				   "should define CA identifier (-i)\n", pname);
-				exit (SCEP_PKISTATUS_SUCCESS);
-			}
-			printf("%s: valid response from server\n", pname);
-			if (reply.type == SCEP_MIME_GETCA_RA) {
-				/* XXXXXXXXXXXXXXXXXXXXX chain not verified */
-				write_ca_ra(&reply);
-			}
-			/* Read payload as DER X.509 object: */
-			bp = BIO_new_mem_buf(reply.payload, reply.bytes);
-			cacert = d2i_X509_bio(bp, NULL);
-
-			/* Read and print certificate information */
-			if (!X509_digest(cacert, fp_alg, md, &n)) {
-				ERR_print_errors_fp(stderr);
-				exit (SCEP_PKISTATUS_ERROR);
-			}
-			printf("%s: %s fingerprint: ", pname,
-				OBJ_nid2sn(EVP_MD_type(fp_alg)));
-			for (c = 0; c < (int)n; c++) {
-				printf("%02X%c",md[c],
-					(c + 1 == (int)n) ?'\n':':');
-			}
-
-			/* Write PEM-formatted file: */
-			#ifdef WIN32
-			if ((fopen_s(&fp, c_char, "w")))
-			#else
-			if (!(fp = fopen(c_char, "w")))
-			#endif
-			{
-				fprintf(stderr, "%s: cannot open CA file for "
-					"writing\n", pname);
-				exit (SCEP_PKISTATUS_ERROR);
-			}
-			if (PEM_write_X509(fp, cacert) != 1) {
-				fprintf(stderr, "%s: error while writing CA "
-					"file\n", pname);
-				ERR_print_errors_fp(stderr);
-				exit (SCEP_PKISTATUS_ERROR);
-			}
-			printf("%s: CA certificate written as %s\n",
-				pname, c_char);
-			(void)fclose(fp);
-			pkistatus = SCEP_PKISTATUS_SUCCESS;
+			scep_operation_getca(host_name, host_port, dir_name);
 			break;
 
 		case SCEP_OPERATION_GETNEXTCA:
@@ -1025,6 +940,8 @@ not_enroll:
 			write_crl(&scep_t);
 			break;
 	}
+
+	curl_global_cleanup();
 	//TODO
 	//richtiger ort für disable??
 //	if(e){
