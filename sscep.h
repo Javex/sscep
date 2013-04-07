@@ -136,7 +136,7 @@ int operation_flag;
 	"Integrity check failed"
 #define SCEP_FAILINFO_BADREQ		2
 #define SCEP_FAILINFO_BADREQ_STR	\
-	"Transaction not permitted or supported" 
+	"Transaction not permitted or supported"
 #define SCEP_FAILINFO_BADTIME		3
 #define SCEP_FAILINFO_BADTIME_STR	\
 	"Message time field was not sufficiently close to the system time"
@@ -218,6 +218,25 @@ struct http_reply {
 	size_t bytes;
 };
 
+/* HTTP request structure
+ * Contains all information necessary to make a request to SCEP server
+ */
+enum t_scheme{
+	HTTP,
+	HTTPS,
+};
+
+
+struct http_request {
+	int port;
+	char port_str[6];
+	char *host_name;
+	enum t_scheme scheme;
+	char *path;
+	char *full_url;
+	char *opstr;
+};
+
 /* SCEP transaction structure */
 struct scep {
 
@@ -257,7 +276,7 @@ struct scep {
 
 	/* Reply */
 	PKCS7 *reply_p7;
-	unsigned char *reply_payload;	
+	unsigned char *reply_payload;
 	int reply_len;
 
 	/* Engine */
@@ -275,8 +294,9 @@ void usage(void);
 /* Send HTTP message */
 int send_msg (struct http_reply *, char *, char *, int, int);
 size_t scep_recieve_data(void *buffer, size_t size, size_t nmemb, void *userp);
-struct http_reply *scep_send_request_getca(char *host_name, int host_port, char *dir_name);
-void scep_operation_getca(char *host_name, int host_port, char *dir_name);
+struct http_reply *scep_send_request(struct http_request *request);
+int scep_operation_getca(struct http_request *request);
+int scep_operation_getnextca(struct http_request *request);
 
 /* Catch SIGALRM */
 void catchalarm (int);

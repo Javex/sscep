@@ -43,50 +43,52 @@ size_t scep_recieve_data(void *buffer, size_t size, size_t nmemb, void *userp)
 	return realsize;
 }
 
-struct http_reply *scep_send_request_getca(char *host_name, int host_port, char *dir_name)
+struct http_reply *scep_send_request(struct http_request *request)
 {
-	int length_of_complete_url;
-	char port_str[6], *http_url, *content_type;
-	snprintf(port_str, 5, "%d", host_port);
+	int url_length;
 	CURL *curl_handle;
 	struct http_reply *reply;
+	char *content_type;
 
-	curl_handle = curl_easy_init();
-	if(!curl_handle) {
-		fprintf(stderr, "%s: Could not get CURL handle!\n");
-		exit(SCEP_PKISTATUS_NET);
-	}
+	// compute the amount of space that needs to be allocated for the URL.
+	url_length = strlen(request->host_name)
+				 + strlen(":")
+				 + strlen(request->port_str)
+				 + (p_flag ? 0 : 1)
+				 + strlen(request->path)
+				 + strlen(i_char)
+				 + (M_flag ? strlen(M_char) : 0)
+				 + strlen(request->opstr)
+				 + 1;
+	request->full_url = malloc(url_length);
+	// first insert all chars that are always used
+	snprintf(request->full_url, url_length, "%s:%s%s%s?operation=%s&message=%s",
+			request->host_name, request->port_str, p_flag ? "" : "/",
+			request->path, request->opstr, i_char);
 
-	length_of_complete_url = strlen(host_name)
-							 + strlen(":")
-							 + strlen(port_str)
-							 + (p_flag ? 0 : 1)
-							 + strlen(dir_name)
-							 + strlen(i_char)
-							 + (M_char ? strlen(M_char) : 0)
-							 + strlen("?operation=GetCACert&message=")
-							 + 1;
-	http_url = malloc(length_of_complete_url * sizeof(char));
-
-	snprintf(http_url, length_of_complete_url, "%s:%s%s%s?operation=GetCACert&message=%s",
-				host_name, port_str, p_flag ? "" : "/", dir_name, i_char);
-
+	// insert possible optional additional parameters
 	if(M_flag) {
-		strncat(http_url, "&", 1);
-		strncat(http_url, M_char, strlen(M_char));
+		strncat(request->full_url, "&", 1);
+		strncat(request->full_url, M_char, strlen(M_char));
 	}
 
 	printf("%s: requesting CA certificate\n", pname);
 
 	if(d_flag)
-		printf("Sending request to %s\n", http_url);
+		printf("Sending request to %s\n", request->full_url);
 
-
+	curl_handle = curl_easy_init();
+	if(!curl_handle) {
+		fprintf(stderr, "%s: Could not get CURL handle!\n", pname);
+		exit(SCEP_PKISTATUS_NET);
+	}
+	//
 	reply = malloc(sizeof(struct http_reply));
 	reply->payload = NULL;
 	reply->bytes = 0;
-	curl_easy_setopt(curl_handle, CURLOPT_URL, http_url);
-	free(http_url);
+	curl_easy_setopt(curl_handle, CURLOPT_URL, request->full_url);
+	// curl makes a copy, so we can free it directly
+	free(request->full_url);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, scep_recieve_data);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, reply);
 
@@ -102,7 +104,7 @@ struct http_reply *scep_send_request_getca(char *host_name, int host_port, char 
 
 
 	curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &(reply->status));
-	printf("Server responded with status %d\n", reply->status);
+	printf("Server responded with status %ld\n", reply->status);
 
 	res = curl_easy_getinfo(curl_handle, CURLINFO_CONTENT_TYPE, &content_type);
 	if(res != CURLE_OK) {
@@ -118,6 +120,8 @@ struct http_reply *scep_send_request_getca(char *host_name, int host_port, char 
 		reply->type = SCEP_MIME_GETCA;
 	else if (strcmp(content_type, MIME_GETCA_RA) == 0)
 		reply->type = SCEP_MIME_GETCA_RA;
+	else if(strcmp(content_type, MIME_GETNEXTCA) == 0)
+		reply->type = SCEP_MIME_GETNEXTCA;
 	else {
 		fprintf(stderr, "%s: wrong MIME content type: %s\n", pname, content_type);
 		exit(SCEP_PKISTATUS_NET);
@@ -131,7 +135,7 @@ struct http_reply *scep_send_request_getca(char *host_name, int host_port, char 
 	return reply;
 }
 
-void scep_operation_getca(char *host_name, int host_port, char *dir_name)
+int scep_operation_getca(struct http_request *request)
 {
 	int c;
 	BIO *bp;
@@ -150,12 +154,9 @@ void scep_operation_getca(char *host_name, int host_port, char *dir_name)
 
 	/* Forge the HTTP message */
 
-	reply = scep_send_request_getca(host_name, host_port, dir_name);
+	request->opstr = "GetCACert";
+	reply = scep_send_request(request);
 
-	/*
-	 * Send http message.
-	 * Response is written to http_response struct "reply".
-	 */
 	if (reply->payload == NULL) {
 		fprintf(stderr, "%s: no data, perhaps you "
 		   "should define CA identifier (-i)\n", pname);
@@ -164,7 +165,7 @@ void scep_operation_getca(char *host_name, int host_port, char *dir_name)
 	printf("%s: valid response from server\n", pname);
 	if (reply->type == SCEP_MIME_GETCA_RA) {
 		/* XXXXXXXXXXXXXXXXXXXXX chain not verified */
-		write_ca_ra(&reply);
+		write_ca_ra(reply);
 	}
 	/* Read payload as DER X.509 object: */
 	bp = BIO_new_mem_buf(reply->payload, reply->bytes);
@@ -202,7 +203,110 @@ void scep_operation_getca(char *host_name, int host_port, char *dir_name)
 	printf("%s: CA certificate written as %s\n",
 		pname, c_char);
 	(void)fclose(fp);
-	pkistatus = SCEP_PKISTATUS_SUCCESS;
+	return SCEP_PKISTATUS_SUCCESS;
+}
+
+int scep_operation_getnextca(struct http_request *request)
+{
+	struct http_reply *reply;
+	struct scep scep_t;
+	PKCS7 p7;
+	STACK_OF(X509) *nextcara = NULL;
+	int i;
+	X509 *cert = NULL;
+	FILE *fp = NULL;
+
+	if (v_flag)
+		fprintf(stdout, "%s: SCEP_OPERATION_GETNEXTCA\n",
+			pname);
+
+	/* Set CA identifier */
+	if (!i_flag)
+		i_char = CA_IDENTIFIER;
+
+	/* Forge the HTTP message */
+
+	request->opstr = "GetNextCACert";
+	reply = scep_send_request(request);
+
+	if (reply->payload == NULL) {
+		fprintf(stderr, "%s: no data, perhaps you "
+		   "there is no nextCA available\n", pname);
+		exit (SCEP_PKISTATUS_SUCCESS);
+	}
+
+	printf("%s: valid response from server\n", pname);
+
+	if (reply->type == SCEP_MIME_GETNEXTCA) {
+		/* XXXXXXXXXXXXXXXXXXXXX chain not verified */
+
+		//write_ca_ra(&reply);
+
+		/* Set the whole struct as 0 */
+		memset(&scep_t, 0, sizeof(scep_t));
+
+		scep_t.reply_payload = reply.payload;
+		scep_t.reply_len = reply.bytes;
+		scep_t.request_type = SCEP_MIME_GETNEXTCA;
+
+		pkcs7_verify_unwrap(&scep_t , C_char);
+
+		//pkcs7_unwrap(&scep_t);
+	}
+
+
+	/* Get certs */
+	p7 = *(scep_t.reply_p7);
+	nextcara = scep_t.reply_p7->d.sign->cert;
+
+	if (v_flag) {
+		printf ("verify and unwrap: found %d cert(s)\n", sk_X509_num(nextcara));
+		}
+
+	for (i = 0; i < sk_X509_num(nextcara); i++) {
+			char buffer[1024];
+			char name[1024];
+			memset(buffer, 0, 1024);
+			memset(name, 0, 1024);
+
+			cert = sk_X509_value(nextcara, i);
+			if (v_flag) {
+				printf("%s: found certificate with\n"
+					"  subject: '%s'\n", pname,
+					X509_NAME_oneline(X509_get_subject_name(cert),
+						buffer, sizeof(buffer)));
+				printf("  issuer: %s\n",
+					X509_NAME_oneline(X509_get_issuer_name(cert),
+						buffer, sizeof(buffer)));
+			}
+
+			/* Create name */
+			snprintf(name, 1024, "%s-%d", c_char, i);
+
+
+			/* Write PEM-formatted file: */
+			if (!(fp = fopen(name, "w"))) {
+				fprintf(stderr, "%s: cannot open cert file for writing\n",
+						pname);
+				exit (SCEP_PKISTATUS_FILE);
+			}
+			if (v_flag)
+				printf("%s: writing cert\n", pname);
+			if (d_flag)
+				PEM_write_X509(stdout, cert);
+			if (PEM_write_X509(fp, cert) != 1) {
+				fprintf(stderr, "%s: error while writing certificate "
+					"file\n", pname);
+				ERR_print_errors_fp(stderr);
+				exit (SCEP_PKISTATUS_FILE);
+			}
+			printf("%s: certificate written as %s\n", pname, name);
+			(void)fclose(fp);
+	}
+
+
+
+	return SCEP_PKISTATUS_SUCCESS;
 }
 
 int
@@ -214,7 +318,7 @@ send_msg(struct http_reply *http,char *msg,char *host,int port,int operation) {
 
 #ifdef WIN32
 	int tv=timeout*1000;
-#else	
+#else
 	struct timeval tv;
 	tv.tv_sec = timeout;
 	tv.tv_usec = 0;
@@ -249,7 +353,7 @@ send_msg(struct http_reply *http,char *msg,char *host,int port,int operation) {
 		perror("error ");
 		return (1);
 	}
-	
+
 	/* connect to server */
 	/* The two socket options SO_RCVTIMEO and SO_SNDTIMEO do not work with connect
 	   connect has a default timeout of 120 */
@@ -260,7 +364,7 @@ send_msg(struct http_reply *http,char *msg,char *host,int port,int operation) {
 	}
 	setsockopt(sd,SOL_SOCKET, SO_RCVTIMEO,(void *)&tv, sizeof(tv));
 	setsockopt(sd,SOL_SOCKET, SO_SNDTIMEO,(void *)&tv, sizeof(tv));
-	/* send data */ 
+	/* send data */
 	rc = send(sd, msg,strlen(msg), 0);
 
 	if (rc < 0) {
@@ -274,7 +378,7 @@ send_msg(struct http_reply *http,char *msg,char *host,int port,int operation) {
 		close(sd);
 		return (1);
 	}
-	
+
 	/* Get response */
 	buf = (char *)malloc(1024);
         used = 0;
@@ -288,16 +392,16 @@ send_msg(struct http_reply *http,char *msg,char *host,int port,int operation) {
 		return (1);
 	}
         buf[used] = '\0';
-		
-	
+
+
 	/* Fetch the status code: */
 	#ifdef WIN32
-	sscanf(buf, "%s %d ", tmp, &http->status);
+	sscanf(buf, "%s %ld ", tmp, &http->status);
 	#else
-	sscanf(buf, "%s %d ", tmp, &http->status);
+	sscanf(buf, "%s %ld ", tmp, &http->status);
 	#endif
 	if (v_flag)
-		fprintf(stdout, "%s: server returned status code %d\n", 
+		fprintf(stdout, "%s: server returned status code %ld\n",
 			pname, http->status);
 
 	/* Set SCEP reply type */
@@ -317,7 +421,7 @@ send_msg(struct http_reply *http,char *msg,char *host,int port,int operation) {
 			} else {
 				if (v_flag)
 					printf("%s: mime_err: %s\n", pname,buf);
-				
+
 				goto mime_err;
 			}
 			break;
@@ -363,7 +467,7 @@ send_msg(struct http_reply *http,char *msg,char *host,int port,int operation) {
 	}
 	http->bytes = used - (http->payload - p);
 	if (http->payload == NULL) {
-		/* This is not necessarily error... 
+		/* This is not necessarily error...
 		 * XXXXXXXXXXXXXXXX check */
 		fprintf(stderr, "%s: cannot find data from http reply\n",pname);
 	}
@@ -390,7 +494,7 @@ char * url_encode(char *s, size_t n) {
 
 	/* Allocate 2 times bigger space than the original string */
 	len = 2 * n;
-	r = (char *)malloc(len);	
+	r = (char *)malloc(len);
 	if (r == NULL) {
 		return NULL;
 	}
@@ -399,7 +503,7 @@ char * url_encode(char *s, size_t n) {
 #else
 	strcpy(r, "");
 #endif
-	
+
 	/* Copy data */
 	for (i = 0; i < n; i++) {
 		switch (*(s+i)) {
